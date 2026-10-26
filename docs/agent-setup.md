@@ -10,6 +10,8 @@ Reviewed against Microsoft documentation on October 26, 2026. Tenant availabilit
 
 The current dashboard is a manual export/import workflow, with no direct agent connection. Work-data search is enough to start. An unavailable OneDrive write tool or identity API must not block evidence collection.
 
+If you already installed the current CPSync skill, copy the [short example snapshot prompt](example-snapshot-prompt.txt) into the agent's chat. It contains no email address; confirm your report account inside your work agent. The full request below also works without an installed skill.
+
 1. Download [the self-contained snapshot request](../collector/snapshot-request.txt), or select **Get snapshot request** in the local dashboard and copy its full text.
 2. Send that request to your existing work agent. It includes the full format, so a skill install is optional. Confirm your work email inside that agent as the report's label; an independent identity endpoint is not required.
 3. Have it return a downloadable `snapshot.json`, or the complete JSON in one code block if file generation is unavailable. It must report its actual delivery and never describe a download as a OneDrive save.

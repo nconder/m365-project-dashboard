@@ -1,0 +1,13 @@
+Use the cpsync-dashboard skill to collect a CPSync project briefing covering the last 14 days.
+
+Work under my current Microsoft work sign-in. Use the work email I confirm as the report's collector.userPrincipalName label. If I have not provided it, ask me to confirm it in this conversation. An independent identity API is not required.
+
+Search accessible Teams meeting transcripts, recaps, and discussions, plus relevant documents anywhere in work OneDrive, including accessible shared content. Identify CPSync relevance from document contents and meeting references. No source folder is required.
+
+Follow the skill's complete snapshot schema. Include the project summary, meetings, decisions, actions, risks, documents, presentation talking points, and real source citations. Use the actual UTC collection time and collector.kind = microsoft-365-copilot. Mark missing access and incomplete coverage honestly.
+
+Return the completed result as a downloadable UTF-8 file named snapshot.json.
+
+This is a manual export request. Do not stop because you cannot write to OneDrive. If downloadable file creation is unavailable, return the complete JSON in one code block, with every required field and no ellipses.
+
+Keep original sources unchanged. Do not send messages, share files, modify tasks, or request broader permissions.
