@@ -68,7 +68,12 @@ export async function createDashboardServer(options = {}) {
     checkedAt = new Date().toISOString();
     available = await store.ready();
     if (!available) { collectionError = settings.folder ? 'The configured OneDrive folder is unavailable. Check sync and folder access.' : ''; files = []; return; }
+    if (!settings.expectedAccount) { collectionError = 'Set the expected work account in Collection setup before reading project data.'; return; }
     try {
+      if (!snapshot) {
+        const recovered = await store.recoverSnapshot();
+        if (recovered) { snapshot = recovered.snapshot; hash = recovered.hash; }
+      }
       const incoming = await store.readSnapshot();
       if (snapshot && Date.parse(incoming.snapshot.collectedAt) < Date.parse(snapshot.collectedAt)) throw new Error('An older snapshot was detected. The newer valid collection is retained.');
       if (incoming.hash !== hash) {

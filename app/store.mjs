@@ -18,7 +18,24 @@ export class OneDriveFileStore {
     const file = await this.resolveFile('snapshot.json');
     if ((await stat(file)).size > MAX_SNAPSHOT_BYTES) throw new Error('Snapshot exceeds the 2 MB limit.');
     const raw = await readFile(file, 'utf8');
-    return { snapshot: parseSnapshot(raw, { expectedAccount: this.expectedAccount }), hash: createHash('sha256').update(raw).digest('hex') };
+    const snapshot = parseSnapshot(raw, { expectedAccount: this.expectedAccount });
+    return { snapshot, hash: createHash('sha256').update(JSON.stringify(snapshot)).digest('hex') };
+  }
+
+  async recoverSnapshot() {
+    let entries;
+    try { entries = await readdir(path.join(this.folder, 'history'), { withFileTypes: true }); }
+    catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+    const files = entries.filter(entry => entry.isFile() && /^[\dTZ.-]+-[a-f0-9]{12}\.json$/.test(entry.name)).map(entry => entry.name).sort().reverse();
+    for (const name of files) {
+      try {
+        const file = await this.resolveFile(path.join('history', name));
+        if ((await stat(file)).size > MAX_SNAPSHOT_BYTES) continue;
+        const snapshot = parseSnapshot(await readFile(file, 'utf8'), { expectedAccount: this.expectedAccount });
+        return { snapshot, hash: createHash('sha256').update(JSON.stringify(snapshot)).digest('hex') };
+      } catch { /* Ignore incomplete or invalid history files and try the next accepted version. */ }
+    }
+    return null;
   }
 
   async resolveFile(relative) {

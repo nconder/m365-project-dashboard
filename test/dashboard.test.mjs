@@ -32,7 +32,7 @@ test('collector snapshots must match CPSync, the work account, and known evidenc
 });
 
 test('unsupported URLs, invalid dates, oversized and half-synced files are rejected', () => {
-  for (const url of ['javascript:alert(1)', 'https://teams.microsoft.com.evil.test/a', 'http://teams.microsoft.com/a', 'https://user:password@teams.microsoft.com/a', 'file:///C:/secrets', 'https://teams.microsoft.com:9999/a']) assert.equal(safeSourceUrl(url), false);
+  for (const url of ['javascript:alert(1)', 'https://teams.microsoft.com.evil.test/a', 'http://teams.microsoft.com/a', 'https://user:password@teams.microsoft.com/a', 'file:///C:/secrets', 'https://teams.microsoft.com:9999/a', 'https://contoso.sharepoint.com/file?tempauth=secret', 'https://onedrive.live.com/personal-file']) assert.equal(safeSourceUrl(url), false);
   assert.equal(safeSourceUrl('https://contoso-my.sharepoint.com/personal/user/Documents/plan.docx'), true);
   const invalidDate = clone(); invalidDate.actions[0].dueDate = '2026-02-30';
   assert.throws(() => validateSnapshot(invalidDate), /invalid/);
@@ -117,4 +117,21 @@ test('empty startup is honest and prevents export or unprotected remote hosting'
   const prompt = await (await fetch(`${base}/api/collector-prompt`)).json();
   assert.match(prompt.prompt, /CPSync/);
   assert.match(prompt.prompt, /work account/);
+});
+
+test('accepted history survives a restart and mismatched identity is never recovered', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'cpsync-recovery-'));
+  t.after(() => cleanup(directory));
+  const store = new OneDriveFileStore(directory, fixture.collector.userPrincipalName);
+  await writeFile(path.join(directory, 'snapshot.json'), JSON.stringify(fixture));
+  const accepted = await store.readSnapshot();
+  await store.archive(accepted.snapshot, accepted.hash);
+  await writeFile(path.join(directory, 'snapshot.json'), '{"stillSyncing":');
+  const { state } = await createDashboardServer({ folder: directory, expectedAccount: fixture.collector.userPrincipalName, settingsPath: path.join(directory, 'settings.json') });
+  assert.equal(state().snapshot.collectedAt, fixture.collectedAt);
+  assert.match(state().collection.error, /syncing/);
+  assert.equal(await new OneDriveFileStore(directory, 'other@contoso.com').recoverSnapshot(), null);
+  const withoutIdentity = await createDashboardServer({ folder: directory, expectedAccount: '', settingsPath: path.join(directory, 'settings.json') });
+  assert.equal(withoutIdentity.state().snapshot, null);
+  assert.match(withoutIdentity.state().collection.error, /expected work account/);
 });

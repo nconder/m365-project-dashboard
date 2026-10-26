@@ -199,7 +199,7 @@ document.addEventListener('input', event => {
   const position = event.target.selectionStart;
   render();
   $('#search').focus();
-  if ($('#search').type !== 'search') $('#search').setSelectionRange(position, position);
+  if (Number.isInteger(position)) $('#search').setSelectionRange(position, position);
 });
 document.addEventListener('submit', async event => {
   if (event.target.id !== 'settings-form') return;

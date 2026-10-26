@@ -14,6 +14,8 @@ npm start
 
 Open `http://127.0.0.1:4317`. The first run displays a genuine empty state, not company-looking sample data.
 
+On Windows you can also double-click `Start Dashboard.cmd`; keep its window open while using the dashboard.
+
 1. Sign in to the **work** OneDrive sync client with the same work account used by Microsoft Copilot.
 2. In that OneDrive, create `ProjectDashboard/CPSync/supporting` and mark the CPSync folder **Always keep on this device**.
 3. Open **Collection setup** in the dashboard. Enter the existing local CPSync folder and the work-account email. Settings are saved only to the ignored `.local/settings.json` file.
@@ -59,7 +61,7 @@ The collector skill contains the JSON contract. `examples/cpsync.snapshot.json` 
 - Presentation mode, standalone HTML and presentation-notes exports.
 - Downloads of supporting Office files from the project folder.
 - Work-account, project, evidence, URL, date and size checks on incoming snapshots.
-- Last valid in-process collection retained through malformed/partial sync, identity mismatch and older snapshots.
+- Last valid collection retained through malformed/partial sync, identity mismatch and older snapshots, with accepted-history recovery after a restart.
 - Accepted snapshot history and atomic replacement of generated reports.
 - Loopback host, same-origin request and path-boundary checks; escaped content and restrictive browser policies.
 

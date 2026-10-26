@@ -17,12 +17,13 @@ export function safeSourceUrl(value) {
   try {
     const url = new URL(value);
     const host = url.hostname.toLowerCase();
+    if ([...url.searchParams.keys()].some(key => /^(access_token|token|tempauth|authkey|client_secret|sig)$/i.test(key))) return false;
     return url.protocol === 'https:' && !url.username && !url.password && !url.port &&
       (host === 'teams.microsoft.com' || host === 'teams.cloud.microsoft' ||
        host === 'm365.cloud.microsoft' || host === 'copilot.cloud.microsoft' ||
        host === 'outlook.office.com' || host === 'outlook.office365.com' ||
        host === 'office.com' || host === 'www.office.com' ||
-       host === 'onedrive.live.com' || host.endsWith('.sharepoint.com'));
+       host.endsWith('.sharepoint.com'));
   } catch { return false; }
 }
 
