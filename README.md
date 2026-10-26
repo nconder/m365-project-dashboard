@@ -74,6 +74,7 @@ The collector skill contains the JSON contract. `examples/cpsync.snapshot.json` 
 - Presentation mode, standalone HTML and presentation-notes exports.
 - Downloads of supporting Office files from the project folder.
 - Work-account, project, evidence, URL, date and size checks on incoming snapshots.
+- Missing, unrecognised, or unsafe citation addresses are removed and flagged for review without blocking the whole briefing. Those links are never clickable, and affected complete coverage is downgraded to partial. Account, project, and source-reference checks remain required. HTTPS in a citation error refers to the source address, not the local dashboard's transport.
 - Last valid collection retained through malformed/partial sync, identity mismatch and older snapshots, with accepted-history recovery after a restart.
 - Accepted snapshot history and atomic replacement of generated reports.
 - Loopback host, same-origin request and path-boundary checks; escaped content and restrictive browser policies.

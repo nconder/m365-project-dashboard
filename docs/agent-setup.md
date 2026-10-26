@@ -18,6 +18,8 @@ If you already installed the current CPSync skill, copy the [short example snaps
 4. Select **Load snapshot** in the dashboard. Choose the file or paste the JSON and confirm the report account. Keep corporate results on an authorised device; do not send them to this development chat or GitHub.
 5. With an output folder configured, the app saves the validated snapshot and generates reports there. Without one, it opens a session preview that disappears when the server restarts. An invalid snapshot leaves the previous valid briefing intact.
 
+**Source-link warnings:** A missing or unrecognised citation URL no longer blocks import. The app retains the findings and source title/ID, removes the unusable address, and shows **Link needs review**. Unsafe or unrecognised links are not clickable, and affected complete coverage becomes partial. You do not need to enable HTTPS on the local dashboard. Do not fabricate or rewrite source URLs merely to satisfy validation.
+
 If you imported an earlier skill or pasted earlier agent instructions, replace them with the current versions. Those older instructions incorrectly required OneDrive writing before searching. For a single export, the new request explicitly allows manual export without that tool. The builder setup below is optional when you already have a working agent.
 
 ## Files and settings for both routes

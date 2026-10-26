@@ -59,9 +59,9 @@ Coverage status: `complete`, `partial`, `unavailable`, or `not-requested`. Healt
 
 ### Sources
 
-Each source is `{ "id": "stable-source-id", "kind": "meeting|document|message|email", "title": "Actual source title", "url": "Actual HTTPS Microsoft 365 permalink", "date": "Actual date, optional" }`.
+Each source is `{ "id": "stable-source-id", "kind": "meeting|document|message|email", "title": "Actual source title", "url": "Actual HTTPS Microsoft 365 permalink, or an empty string if unavailable", "date": "Actual date, optional" }`.
 
-Only include accessible original Teams, Outlook, Office, OneDrive, or tenant SharePoint permalinks. Do not invent a link, use an expiring download URL, or save an access token in a URL. Source IDs must be unique.
+Use accessible original Teams, Outlook, Office, OneDrive, or tenant SharePoint permalinks when provided by the search tools. If a real source was retrieved but its permalink is unavailable, retain its actual title, ID, and known date, use an empty URL, and report partial coverage. Never invent a URL to satisfy the format. The dashboard retains those findings and marks the source link for review. Unrecognised or unsafe addresses are disabled and removed from accepted reports. Do not use an expiring download URL or put access tokens in a URL. Source IDs must be unique.
 
 ### Records
 

@@ -2,6 +2,16 @@ export const PROJECT = Object.freeze({ id: 'cpsync', name: 'CPSync' });
 export const MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
 const statuses = new Set(['complete', 'partial', 'unavailable', 'not-requested']);
 const recordTypes = ['meetings', 'decisions', 'actions', 'risks', 'documents'];
+const linkProblems = Object.freeze({
+  missing: 'No usable source address was supplied.',
+  'too-long': 'The source address is too long to open safely.',
+  malformed: 'The source address could not be read as a web link.',
+  'not-https': 'The source address is not an HTTPS web link.',
+  credentials: 'The source address contains sign-in information and was removed.',
+  'access-key': 'The source address contains an access key or token and was removed.',
+  port: 'The source address uses an unsupported port.',
+  host: 'The source address is HTTPS, but this app does not recognise its website.'
+});
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -12,19 +22,33 @@ function text(value, field, max = 12000) {
   return value;
 }
 
-export function safeSourceUrl(value) {
-  if (typeof value !== 'string' || value.length > 4000) return false;
+function sourceUrlIssue(value) {
+  if (typeof value !== 'string' || !value.trim()) return 'missing';
+  if (value.length > 4000) return 'too-long';
   try {
     const url = new URL(value);
     const host = url.hostname.toLowerCase();
-    if ([...url.searchParams.keys()].some(key => /^(access_token|token|tempauth|authkey|client_secret|sig)$/i.test(key))) return false;
-    return url.protocol === 'https:' && !url.username && !url.password && !url.port &&
-      (host === 'teams.microsoft.com' || host === 'teams.cloud.microsoft' ||
+    if (url.username || url.password) return 'credentials';
+    if ([...url.searchParams.keys()].some(key => /^(access_token|token|tempauth|authkey|client_secret|sig)$/i.test(key))) return 'access-key';
+    if (url.protocol !== 'https:') return 'not-https';
+    if (url.port) return 'port';
+    return (host === 'teams.microsoft.com' || host === 'teams.cloud.microsoft' ||
        host === 'm365.cloud.microsoft' || host === 'copilot.cloud.microsoft' ||
        host === 'outlook.office.com' || host === 'outlook.office365.com' ||
        host === 'office.com' || host === 'www.office.com' ||
-       host.endsWith('.sharepoint.com'));
-  } catch { return false; }
+       host.endsWith('.sharepoint.com')) ? null : 'host';
+  } catch { return 'malformed'; }
+}
+
+export function safeSourceUrl(value) {
+  return sourceUrlIssue(value) === null;
+}
+
+export function citationWarnings(snapshot) {
+  return (snapshot?.sources || []).filter(source => !safeSourceUrl(source.url)).map(source => ({
+    id: source.id, title: source.title,
+    message: linkProblems[source.citationProblem] || linkProblems[sourceUrlIssue(source.url)] || linkProblems.missing
+  }));
 }
 
 function validDate(value) {
@@ -57,7 +81,6 @@ export function validateSnapshot(input, { expectedAccount = '', now = Date.now()
     sourceIds.add(source.id);
     text(source.title, 'source.title', 1000);
     assert(['meeting', 'document', 'message', 'email'].includes(source.kind), 'Unsupported source kind.');
-    assert(safeSourceUrl(source.url), `Source ${source.id} needs an approved HTTPS Microsoft 365 link.`);
     if (source.date) assert(validDate(source.date), `Source ${source.id} has an invalid date.`);
   }
   const citations = (item, field) => {
@@ -93,8 +116,19 @@ export function validateSnapshot(input, { expectedAccount = '', now = Date.now()
     text(point.text, 'presentation.talkingPoints.text', 3000);
     citations(point, 'presentation.talkingPoints');
   }
-  // Keep the JSON document as the portable storage contract; never evaluate agent-generated code.
-  return JSON.parse(JSON.stringify(input));
+  // Preserve findings when a citation is unavailable, without persisting unsafe clickable addresses.
+  const snapshot = JSON.parse(JSON.stringify(input));
+  for (const source of snapshot.sources) {
+    const issue = sourceUrlIssue(source.url);
+    if (issue) {
+      const previousIssue = !source.url && Object.hasOwn(linkProblems, source.citationProblem) ? source.citationProblem : null;
+      source.citationProblem = previousIssue || issue;
+      source.url = '';
+      const section = source.kind === 'meeting' ? 'meetings' : source.kind === 'document' ? 'documents' : 'messages';
+      if (snapshot.coverage[section].status === 'complete') snapshot.coverage[section].status = 'partial';
+    } else delete source.citationProblem;
+  }
+  return snapshot;
 }
 
 export function parseSnapshot(raw, options) {

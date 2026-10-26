@@ -5,9 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { once } from 'node:events';
 import { request as httpRequest } from 'node:http';
-import { validateSnapshot, parseSnapshot, safeSourceUrl } from '../app/snapshot.mjs';
+import { validateSnapshot, parseSnapshot, safeSourceUrl, citationWarnings } from '../app/snapshot.mjs';
 import { OneDriveFileStore } from '../app/store.mjs';
-import { renderReport } from '../app/report.mjs';
+import { renderReport, renderBrief } from '../app/report.mjs';
 import { createDashboardServer, assertLocalHost } from '../app/server.mjs';
 
 const fixture = JSON.parse(await readFile(new URL('../examples/cpsync.snapshot.json', import.meta.url), 'utf8'));
@@ -31,13 +31,43 @@ test('collector snapshots must match CPSync, the work account, and known evidenc
   assert.throws(() => validateSnapshot(duplicate), /Duplicate source/);
 });
 
-test('unsupported URLs, invalid dates, oversized and half-synced files are rejected', () => {
+test('unsafe URLs stay blocked and invalid dates, oversized or half-synced files are rejected', () => {
   for (const url of ['javascript:alert(1)', 'https://teams.microsoft.com.evil.test/a', 'http://teams.microsoft.com/a', 'https://user:password@teams.microsoft.com/a', 'file:///C:/secrets', 'https://teams.microsoft.com:9999/a', 'https://contoso.sharepoint.com/file?tempauth=secret', 'https://onedrive.live.com/personal-file']) assert.equal(safeSourceUrl(url), false);
   assert.equal(safeSourceUrl('https://contoso-my.sharepoint.com/personal/user/Documents/plan.docx'), true);
   const invalidDate = clone(); invalidDate.actions[0].dueDate = '2026-02-30';
   assert.throws(() => validateSnapshot(invalidDate), /invalid/);
   assert.throws(() => parseSnapshot('{"schemaVersion":'), /still be syncing/);
   assert.throws(() => parseSnapshot(' '.repeat(2 * 1024 * 1024 + 1)), /2 MB/);
+});
+
+test('an unrecognised HTTPS citation retains findings with a review warning and no clickable address', () => {
+  const input = clone();
+  const source = input.sources.find(item => item.kind === 'meeting');
+  source.url = 'https://unrecognised.example.test/meeting-recap';
+  source.citationProblem = 'not-https';
+  input.coverage.meetings.status = 'complete';
+  const result = validateSnapshot(input);
+  const importedSource = result.sources.find(item => item.id === source.id);
+  assert.equal(importedSource.url, '');
+  assert.equal(importedSource.citationProblem, 'host');
+  assert.deepEqual(result.meetings, input.meetings);
+  assert.deepEqual(result.actions, input.actions);
+  assert.equal(result.coverage.meetings.status, 'partial');
+  assert.match(citationWarnings(result)[0].message, /HTTPS.*recognise/);
+  assert.equal(source.url, 'https://unrecognised.example.test/meeting-recap');
+  assert.deepEqual(validateSnapshot(result), result);
+  const report = renderReport(result);
+  assert.match(report, /link needs review/);
+  assert.ok(!report.includes('unrecognised.example.test'));
+  assert.match(renderBrief(result), /link needs review/);
+  for (const url of ['javascript:alert(1)', 'https://user:sample-secret@teams.microsoft.com/recap', 'https://contoso.sharepoint.com/file?access_token=sample-secret', '', undefined]) {
+    const unsafe = clone(); unsafe.sources[0].url = url;
+    const accepted = validateSnapshot(unsafe);
+    assert.equal(accepted.sources[0].url, '');
+    assert.ok(citationWarnings(accepted).length > 0);
+    assert.ok(!JSON.stringify(accepted).includes('sample-secret'));
+    assert.ok(!renderReport(accepted).includes('href="javascript:'));
+  }
 });
 
 test('generated HTML escapes source content and keeps valid source links', () => {
@@ -189,4 +219,26 @@ test('manual import saves validated results and rejects older or wrong-account o
   const wrongAccount = clone(); wrongAccount.collector.userPrincipalName = 'other@contoso.com';
   assert.equal((await post(wrongAccount)).status, 400);
   assert.equal(await readFile(path.join(directory, 'snapshot.json'), 'utf8'), accepted);
+});
+
+test('HTTP import accepts an HTTPS citation outside the allowlist and exports it as a disabled reference', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'cpsync-citation-review-'));
+  const { server } = await createDashboardServer({ folder: directory, expectedAccount: fixture.collector.userPrincipalName, settingsPath: path.join(directory, 'settings.json') });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); await cleanup(directory); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const incoming = clone(); incoming.sources[0].url = 'https://unrecognised.example.test/meeting-recap';
+  const response = await fetch(`${base}/api/import-snapshot`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ snapshot: incoming }) });
+  assert.equal(response.status, 200);
+  const state = await response.json();
+  assert.equal(state.citationWarnings[0].id, incoming.sources[0].id);
+  assert.equal(state.snapshot.sources[0].url, '');
+  assert.equal(state.snapshot.actions.length, incoming.actions.length);
+  const report = await (await fetch(`${base}/report`)).text();
+  assert.match(report, /source link\(s\) need review/);
+  assert.ok(!report.includes('unrecognised.example.test'));
+  assert.match(await (await fetch(`${base}/brief`)).text(), /link needs review/);
+  const saved = JSON.parse(await readFile(path.join(directory, 'snapshot.json'), 'utf8'));
+  assert.equal(saved.sources[0].citationProblem, 'host');
+  assert.deepEqual(validateSnapshot(saved), saved);
 });

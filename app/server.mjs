@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { OneDriveFileStore } from './store.mjs';
-import { PROJECT, parseSnapshot, MAX_SNAPSHOT_BYTES } from './snapshot.mjs';
+import { PROJECT, parseSnapshot, MAX_SNAPSHOT_BYTES, citationWarnings } from './snapshot.mjs';
 import { renderReport, renderBrief } from './report.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -99,7 +99,7 @@ export async function createDashboardServer(options = {}) {
   }
 
   const state = () => ({
-    project: PROJECT, snapshot, files, demo,
+    project: PROJECT, snapshot, files, demo, citationWarnings: citationWarnings(snapshot),
     storage: { configured: !!settings.folder, available, folder: settings.folder, expectedAccount: settings.expectedAccount },
     collection: { checkedAt, error: collectionError, stale: !!snapshot && Date.now() - Date.parse(snapshot.collectedAt) > 86400000, hasLastValid: !!snapshot, manualPreview },
     capabilities: { collection: 'Microsoft Copilot agents only', automaticCollection: false, agentConnected: false, applicationApiTokens: false, hosting: 'local-node', azureReady: false }

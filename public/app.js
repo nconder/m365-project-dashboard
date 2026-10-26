@@ -63,7 +63,7 @@ function renderOverview() {
   let activity;
   let documents;
   if (snapshot) {
-    brief = `<section class="panel brief-panel"><div class="panel-header"><h2><span aria-hidden="true">✧</span> The project brief</h2>${badge(snapshot.summary.health)}</div><div class="panel-body"><p class="eyebrow">CPSYNC / AT A GLANCE</p><h2 class="brief-title">${escape(snapshot.summary.headline)}</h2><p class="brief-text">${escape(snapshot.summary.overview)}</p><div class="brief-footer"><span>Grounded in ${snapshot.sources.length} source${snapshot.sources.length === 1 ? '' : 's'}</span>${evidence(snapshot.summary.sourceIds)}</div></div></section>`;
+    brief = `<section class="panel brief-panel"><div class="panel-header"><h2><span aria-hidden="true">✧</span> The project brief</h2>${badge(snapshot.summary.health)}</div><div class="panel-body"><p class="eyebrow">CPSYNC / AT A GLANCE</p><h2 class="brief-title">${escape(snapshot.summary.headline)}</h2><p class="brief-text">${escape(snapshot.summary.overview)}</p><div class="brief-footer"><span>Reported by collector: ${snapshot.sources.length} source${snapshot.sources.length === 1 ? '' : 's'}</span>${evidence(snapshot.summary.sourceIds)}</div></div></section>`;
     const recent = [...snapshot.sources].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5);
     activity = `<div class="timeline">${recent.map(item => `<article class="timeline-item"><span class="item-icon ${escape(item.kind)}">${item.kind === 'meeting' ? '◷' : item.kind === 'document' ? '▤' : '◌'}</span><div><h3 class="item-title">${escape(item.title)}</h3><p class="item-text">${escape(item.kind === 'meeting' ? snapshot.meetings.find(meeting => meeting.sourceIds.includes(item.id))?.summary || 'Meeting source' : item.kind === 'document' ? snapshot.documents.find(document => document.sourceIds.includes(item.id))?.summary || 'Document source' : 'Supporting project conversation')}</p><div class="item-bottom"><span>${formattedDate(item.date)}</span>${evidence([item.id])}</div></div></article>`).join('')}</div>`;
     documents = snapshot.documents.length ? `<div class="panel-body document-grid">${documentCards(snapshot.documents.slice(0, 2))}</div>` : empty('No document findings', 'This collection did not return any supported document updates.');
@@ -128,7 +128,8 @@ function render() {
   $('#nav-documents').textContent = state.snapshot?.documents.length || 0;
   $('#setup-dot').classList.toggle('amber', !state.storage.available);
   const error = $('#error-banner');
-  const message = state.collection.error || (state.collection.stale && !state.demo ? 'This collection is over 24 hours old. Run Microsoft Copilot again for a fresh briefing.' : '');
+  const warningCount = state.citationWarnings?.length || 0;
+  const message = [state.collection.error, warningCount ? `${warningCount} source link(s) need review. The briefing is loaded; those links are disabled. Open its source references for details.` : '', state.collection.stale && !state.demo ? 'This collection is over 24 hours old. Run Microsoft Copilot again for a fresh briefing.' : ''].filter(Boolean).join(' ');
   error.hidden = !message; error.textContent = message;
   const renderers = { overview: renderOverview, meetings: renderMeetings, decisions: renderDecisions, documents: renderDocuments, presentation: renderPresentation, setup: renderSetup };
   $('#content').innerHTML = renderers[view]();
@@ -181,7 +182,10 @@ function openImport() {
 
 function openSources(ids) {
   const sources = state.snapshot?.sources.filter(source => ids.includes(source.id)) || [];
-  $('#sources-content').innerHTML = sources.map(source => `<article class="source-item"><span class="badge gray">${escape(source.kind)}</span><a href="${escape(source.url)}" target="_blank" rel="noopener noreferrer">${escape(source.title)} ↗</a><small>${formattedDate(source.date)}</small></article>`).join('');
+  $('#sources-content').innerHTML = sources.map(source => {
+    const warning = state.citationWarnings?.find(item => item.id === source.id);
+    return `<article class="source-item"><span class="badge gray">${escape(source.kind)}</span>${warning ? `<strong>${escape(source.title)}</strong><span class="badge amber">Link needs review</span><p>${escape(warning.message)}</p>` : `<a href="${escape(source.url)}" target="_blank" rel="noopener noreferrer">${escape(source.title)} ↗</a>`}<small>${formattedDate(source.date)}</small></article>`;
+  }).join('');
   $('#sources-dialog').showModal();
 }
 
