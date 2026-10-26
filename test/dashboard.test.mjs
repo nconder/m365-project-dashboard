@@ -135,3 +135,58 @@ test('accepted history survives a restart and mismatched identity is never recov
   assert.equal(withoutIdentity.state().snapshot, null);
   assert.match(withoutIdentity.state().collection.error, /expected work account/);
 });
+
+test('manual import works without OneDrive and validates account and evidence before preview', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'cpsync-import-preview-'));
+  const { server } = await createDashboardServer({ folder: '', settingsPath: path.join(directory, 'settings.json') });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); await cleanup(directory); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const post = (snapshot, expectedAccount, extraHeaders = {}) => fetch(`${base}/api/import-snapshot`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...extraHeaders }, body: JSON.stringify({ snapshot, expectedAccount }) });
+  assert.equal((await post(clone(), '')).status, 400);
+  assert.equal((await post(clone(), 'other@contoso.com')).status, 400);
+  const incoming = clone();
+  incoming.documents = Array.from({ length: 200 }, (_, index) => ({ ...incoming.documents[0], id: `document-${index}` }));
+  assert.ok(Buffer.byteLength(JSON.stringify(incoming)) > 16000);
+  const response = await post(incoming, incoming.collector.userPrincipalName);
+  assert.equal(response.status, 200);
+  const state = await response.json();
+  assert.equal(state.collection.manualPreview, true);
+  assert.equal(state.storage.configured, false);
+  assert.equal(state.capabilities.agentConnected, false);
+  assert.equal(state.capabilities.automaticCollection, false);
+  assert.equal((await (await fetch(`${base}/api/state`)).json()).snapshot.documents.length, 200);
+  assert.equal((await fetch(`${base}/report`)).status, 200);
+  await assert.rejects(readFile(path.join(directory, 'settings.json')), { code: 'ENOENT' });
+  const invalid = clone(); invalid.actions[0].sourceIds = ['unknown'];
+  assert.equal((await post(invalid, incoming.collector.userPrincipalName)).status, 400);
+  assert.equal((await post(clone(), incoming.collector.userPrincipalName, { Origin: 'https://untrusted.example' })).status, 403);
+  assert.equal((await (await fetch(`${base}/api/state`)).json()).snapshot.documents.length, 200);
+  const request = await fetch(`${base}/collector/request`);
+  assert.match(request.headers.get('content-disposition'), /CPSync-snapshot-request\.txt/);
+  const prompt = await request.text();
+  assert.match(prompt, /MANUAL EXPORT/);
+  assert.match(prompt, /"schemaVersion": 1/);
+  assert.match(prompt, /summary\.sourceIds/);
+});
+
+test('manual import saves validated results and rejects older or wrong-account overwrites', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'cpsync-import-saved-'));
+  const { server } = await createDashboardServer({ folder: directory, expectedAccount: fixture.collector.userPrincipalName, settingsPath: path.join(directory, 'settings.json') });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); await cleanup(directory); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const post = snapshot => fetch(`${base}/api/import-snapshot`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ snapshot }) });
+  const response = await post(clone());
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).collection.manualPreview, false);
+  const accepted = await readFile(path.join(directory, 'snapshot.json'), 'utf8');
+  assert.deepEqual(JSON.parse(accepted), fixture);
+  assert.match(await readFile(path.join(directory, 'dashboard.html'), 'utf8'), /CPSync/);
+  assert.match(await readFile(path.join(directory, 'presentation-brief.md'), 'utf8'), /Talking points/);
+  const older = clone(); older.collectedAt = '2026-09-01T12:00:00Z';
+  assert.equal((await post(older)).status, 400);
+  const wrongAccount = clone(); wrongAccount.collector.userPrincipalName = 'other@contoso.com';
+  assert.equal((await post(wrongAccount)).status, 400);
+  assert.equal(await readFile(path.join(directory, 'snapshot.json'), 'utf8'), accepted);
+});

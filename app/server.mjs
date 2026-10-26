@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { OneDriveFileStore } from './store.mjs';
-import { PROJECT, parseSnapshot } from './snapshot.mjs';
+import { PROJECT, parseSnapshot, MAX_SNAPSHOT_BYTES } from './snapshot.mjs';
 import { renderReport, renderBrief } from './report.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -33,13 +33,13 @@ function protect(request, response) {
   return true;
 }
 
-async function requestJson(request) {
+async function requestJson(request, maxBytes = 16000) {
   if (!request.headers['content-type']?.startsWith('application/json')) throw new Error('Use application/json.');
   let length = 0;
   const parts = [];
   for await (const part of request) {
     length += part.length;
-    if (length > 16000) throw new Error('Request is too large.');
+    if (length > maxBytes) throw new Error('Request is too large.');
     parts.push(part);
   }
   return JSON.parse(Buffer.concat(parts).toString('utf8'));
@@ -62,6 +62,8 @@ export async function createDashboardServer(options = {}) {
   let available = false;
   let files = [];
   let activeScan;
+  let manualPreview = false;
+  let importing = false;
 
   async function scanFiles() {
     if (demo) return;
@@ -82,6 +84,7 @@ export async function createDashboardServer(options = {}) {
         await store.writeGenerated('presentation-brief.md', renderBrief(incoming.snapshot));
         snapshot = incoming.snapshot;
         hash = incoming.hash;
+        manualPreview = false;
       }
       files = await store.supportingFiles();
       collectionError = '';
@@ -98,8 +101,8 @@ export async function createDashboardServer(options = {}) {
   const state = () => ({
     project: PROJECT, snapshot, files, demo,
     storage: { configured: !!settings.folder, available, folder: settings.folder, expectedAccount: settings.expectedAccount },
-    collection: { checkedAt, error: collectionError, stale: !!snapshot && Date.now() - Date.parse(snapshot.collectedAt) > 86400000, hasLastValid: !!snapshot },
-    capabilities: { collection: 'Microsoft Copilot agents only', applicationApiTokens: false, hosting: 'local-node', azureReady: false }
+    collection: { checkedAt, error: collectionError, stale: !!snapshot && Date.now() - Date.parse(snapshot.collectedAt) > 86400000, hasLastValid: !!snapshot, manualPreview },
+    capabilities: { collection: 'Microsoft Copilot agents only', automaticCollection: false, agentConnected: false, applicationApiTokens: false, hosting: 'local-node', azureReady: false }
   });
 
   await scan();
@@ -123,13 +126,45 @@ export async function createDashboardServer(options = {}) {
         await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n', { mode: 0o600 });
         settings = next;
         store = new OneDriveFileStore(settings.folder, settings.expectedAccount);
-        snapshot = null; hash = ''; files = [];
+        snapshot = null; hash = ''; files = []; manualPreview = false;
         await scan();
         return send(response, 200, state());
       }
-      if (request.method === 'GET' && route === '/api/collector-prompt') {
+      if (request.method === 'POST' && route === '/api/import-snapshot') {
+        if (demo) throw new Error('Import is unavailable in the fictional sample preview.');
+        if (importing) throw new Error('Another snapshot is loading. Try again shortly.');
+        importing = true;
+        try {
+          const input = await requestJson(request, MAX_SNAPSHOT_BYTES + 1024);
+          const expectedAccount = settings.expectedAccount || String(input.expectedAccount || '').trim().toLowerCase();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(expectedAccount)) throw new Error('Enter the work account used to collect this snapshot.');
+          if (!input.snapshot || typeof input.snapshot !== 'object' || Array.isArray(input.snapshot)) throw new Error('Choose snapshot.json or paste its JSON contents.');
+          const incoming = parseSnapshot(JSON.stringify(input.snapshot), { expectedAccount });
+          await scan();
+          if (snapshot && Date.parse(incoming.collectedAt) < Date.parse(snapshot.collectedAt)) throw new Error('An older snapshot was supplied. The newer valid collection is retained.');
+          if (settings.folder) {
+            if (!(await store.ready())) throw new Error('The output folder is unavailable. Restore folder access before saving.');
+            await store.writeGenerated('snapshot.json', JSON.stringify(incoming, null, 2) + '\n');
+            await scan();
+            if (collectionError) throw new Error(collectionError);
+          } else {
+            snapshot = incoming; hash = ''; files = []; manualPreview = true; collectionError = '';
+          }
+          return send(response, 200, state());
+        } finally { importing = false; }
+      }
+      if (request.method === 'GET' && (route === '/api/collector-prompt' || route === '/collector/request')) {
         const instructions = await readFile(path.join(root, 'collector', 'run-prompt.txt'), 'utf8');
-        return send(response, 200, { prompt: instructions.replaceAll('{{WORK_ACCOUNT}}', settings.expectedAccount || '[your work account]') });
+        const skill = await readFile(path.join(root, 'collector', 'skills', 'cpsync-dashboard', 'SKILL.md'), 'utf8');
+        const start = skill.indexOf('## Snapshot contract');
+        const end = skill.indexOf('## Before saving');
+        if (start < 0 || end <= start) throw new Error('The snapshot format could not be loaded.');
+        const prompt = instructions.replaceAll('{{WORK_ACCOUNT}}', settings.expectedAccount || '[confirm your work-account email in this conversation]') + '\n\n' + skill.slice(start, end);
+        if (route === '/collector/request') {
+          response.setHeader('Content-Disposition', 'attachment; filename="CPSync-snapshot-request.txt"');
+          return send(response, 200, prompt, types['.txt']);
+        }
+        return send(response, 200, { prompt });
       }
       if (request.method === 'GET' && route === '/collector/skill') {
         response.setHeader('Content-Disposition', 'attachment; filename="SKILL.md"');

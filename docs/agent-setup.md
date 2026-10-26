@@ -6,6 +6,18 @@ The existing collector was originally documented for Cowork. This guide covers M
 
 Reviewed against Microsoft documentation on October 26, 2026. Tenant availability and policy can change which controls you see. Neither route has been installed or verified in the correct CPSync tenant yet.
 
+## Existing M365 agent: get a snapshot now
+
+The current dashboard is a manual export/import workflow, with no direct agent connection. Work-data search is enough to start. An unavailable OneDrive write tool or identity API must not block evidence collection.
+
+1. Download [the self-contained snapshot request](../collector/snapshot-request.txt), or select **Get snapshot request** in the local dashboard and copy its full text.
+2. Send that request to your existing work agent. It includes the full format, so a skill install is optional. Confirm your work email inside that agent as the report's label; an independent identity endpoint is not required.
+3. Have it return a downloadable `snapshot.json`, or the complete JSON in one code block if file generation is unavailable. It must report its actual delivery and never describe a download as a OneDrive save.
+4. Select **Load snapshot** in the dashboard. Choose the file or paste the JSON and confirm the report account. Keep corporate results on an authorised device; do not send them to this development chat or GitHub.
+5. With an output folder configured, the app saves the validated snapshot and generates reports there. Without one, it opens a session preview that disappears when the server restarts. An invalid snapshot leaves the previous valid briefing intact.
+
+If you imported an earlier skill or pasted earlier agent instructions, replace them with the current versions. Those older instructions incorrectly required OneDrive writing before searching. For a single export, the new request explicitly allows manual export without that tool. The builder setup below is optional when you already have a working agent.
+
 ## Files and settings for both routes
 
 | Setting | Value |
@@ -16,7 +28,7 @@ Reviewed against Microsoft documentation on October 26, 2026. Tenant availabilit
 | Skill name after upload | cpsync-dashboard |
 | Agent Builder upload | [collector/packages/cpsync-dashboard.zip](../collector/packages/cpsync-dashboard.zip) |
 | Copilot Studio upload | [collector/skills/cpsync-dashboard/SKILL.md](../collector/skills/cpsync-dashboard/SKILL.md) |
-| First collection prompt | [collector/run-prompt.txt](../collector/run-prompt.txt), replacing `{{WORK_ACCOUNT}}` with your verified work email, or copy it from the dashboard after Collection setup |
+| First collection prompt | [collector/snapshot-request.txt](../collector/snapshot-request.txt), replacing `{{WORK_ACCOUNT}}` with your confirmed work email, or copy the full request from the dashboard |
 | OneDrive output | `ProjectDashboard/CPSync/snapshot.json` |
 | Office supporting files | `ProjectDashboard/CPSync/supporting/` |
 
@@ -36,7 +48,7 @@ Use the work account that owns CPSync throughout. Keep work emails, meeting link
 
 Microsoft's [Agent Builder skills walkthrough](https://microsoft.github.io/copilot-camp/pages/extend-m365-copilot/12-skills-da-agent-builder/) requires a ZIP with `SKILL.md` at its root and currently lists Frontier access for this feature. A missing Skills control can therefore require an administrator to check availability.
 
-**File-write check:** Adding knowledge or a skill does not establish direct write access to OneDrive. The collector must verify an approved file-create/update tool before reporting a saved snapshot. If this route only produces a downloadable file or a briefing response, collection is not automatic. A reviewed manual save is a separate step. For the automatic file workflow, evaluate route B's approved tools rather than adding broad API grants.
+**Delivery:** OneDrive writing is optional. Continue read-only collection when work search is available, then return a downloadable snapshot or complete JSON for manual import. A direct OneDrive save requires an approved write tool and a successful write result. Neither a download nor manual import is automatic agent collection.
 
 The snapshot's `collector.kind` must be `microsoft-365-copilot` for this route.
 
@@ -57,7 +69,7 @@ For Teams context, use the Knowledge search box's **Chats** or **Meetings** tab 
 3. In **Build > Skills > Add skill > Upload a skill**, upload the individual **SKILL.md** file and confirm its name. Studio also accepts a skill ZIP. [Microsoft upload instructions](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/skills-add-existing).
 4. Open **Build > Tools > Work IQ**. Review its connection and sign in with your CPSync work account if prompted. Select **OneDrive, Teams, and Calendar**; include **Outlook mail** only if needed for supporting context. Clear **SharePoint** and other unused workloads. Select **Done**. These are whole-service selections, not a restriction to a single project folder. [Microsoft Work IQ configuration](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/add-work-iq).
 5. Verify that tool calls use the active end user's identity at runtime. Select **End-user credentials** wherever that control is offered; do not use a maker/service-account connection as a runtime substitute. Microsoft documents an [administrator control for end-user credentials](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configure-no-maker-authentication); its environment-wide settings should be reviewed by IT rather than changed just for this guide.
-6. Open **Preview** and run the first collection prompt. Confirm that actual work search and OneDrive file create/update operations are available and allowed. Review the write result and saved file. If either capability is blocked, record that limitation before continuing.
+6. Open **Preview** and run the full snapshot request. Use approved work search to collect evidence. If OneDrive writing is unavailable, return the JSON file or complete JSON response for manual import. Report unavailable source types honestly; do not require an identity API just to label the report with the user's confirmed work email.
 7. After a successful manual test, publish only to the intended private/internal audience permitted by your tenant. Retest as the intended signed-in user, since a maker's successful Preview does not prove runtime end-user authentication.
 
 The snapshot's `collector.kind` must be `copilot-studio` for this route. The **GitHub Copilot harness** is a Studio runtime name; it does not mean your corporate collection runs from this GitHub repository. [Microsoft describes the runtime boundary](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/overview).
@@ -68,9 +80,9 @@ The snapshot's `collector.kind` must be `copilot-studio` for this route. The **G
 
 1. In that work OneDrive, create `ProjectDashboard/CPSync/supporting/` if needed. Sync it through the Windows OneDrive client using the same work account, and mark the CPSync folder **Always keep on this device**.
 2. Open the desktop dashboard's **Collection setup**. Enter the existing local CPSync folder and matching work email. The dashboard's copied prompt then includes the configured email.
-3. Run the collection manually in the chosen agent. Confirm it loaded the skill, used the intended account, and wrote the actual `snapshot.json` into the correct OneDrive folder. The JSON must contain real identity, host, timestamps, and cited evidence; placeholders must be replaced.
+3. Run the full request in the chosen agent under your intended work sign-in. Confirm that it returned complete JSON or a downloadable snapshot, or actually saved it through an approved OneDrive write tool. The JSON must contain the confirmed report email, actual host/timestamps, and cited evidence; placeholders must be replaced.
 4. Open several citations and verify they support the findings. Missing transcript or document access must appear as partial/unavailable coverage, not invented data.
-5. After OneDrive sync, confirm the dashboard accepts the snapshot and produces `dashboard.html` and `presentation-brief.md`. Its 15-second file refresh does not launch an agent. A rejected snapshot must leave the previous valid collection intact.
+5. Use **Load snapshot** to import the returned file or JSON. With an output folder set, confirm it creates `snapshot.json`, `dashboard.html`, and `presentation-brief.md` there. Directly saved OneDrive snapshots can also arrive through sync. The 15-second file refresh does not launch an agent. A rejected import leaves the previous valid briefing intact.
 6. If presentation files are requested, confirm the selected host actually provides approved Office creation tools and saves their outputs into `supporting/`.
 
 The reported account in JSON is an application check, not proof of Microsoft sign-in. The real boundary is the Microsoft session, runtime tool authentication, and work OneDrive permissions. Project filtering in instructions is not a new permission boundary.

@@ -2,6 +2,8 @@
 
 A private, Microsoft 365 project-intelligence workspace. Microsoft Copilot agents collect the information under the user's work identity. OneDrive stores the files. Node serves the dashboard on the desktop.
 
+**Current v1 uses manual export/import. It does not sign into your tenant, invoke your agent, or collect automatically.** The agent can search work data and return JSON without a OneDrive write tool or identity API. The dashboard validates that result and displays it; an optional synced output folder keeps accepted snapshots and generated reports.
+
 V1 is intentionally single-project: **CPSync**. No Microsoft API tokens, application-only permissions, external AI providers, analytics services, CDN assets, database, or npm dependencies are used by the application.
 
 ## Run on the desktop
@@ -16,10 +18,10 @@ Open `http://127.0.0.1:4317`. The first run displays a genuine empty state, not 
 
 On Windows you can also double-click `Start Dashboard.cmd`; keep its window open while using the dashboard.
 
-1. Sign in to the **work** OneDrive sync client with the same work account used by Microsoft Copilot.
-2. In that OneDrive, create `ProjectDashboard/CPSync/supporting` and mark the CPSync folder **Always keep on this device**.
-3. Open **Collection setup** in the dashboard. Enter the existing local CPSync folder and the work-account email. Settings are saved only to the ignored `.local/settings.json` file.
-4. Install the collector skill and complete a first Microsoft Copilot collection as described below.
+1. Select **Get snapshot request**. Copy the full request or download it and attach it to your existing work agent. It includes the snapshot contract, so installing a skill is optional.
+2. Have that agent search CPSync sources and return a downloadable `snapshot.json` or the complete JSON in one code block. A missing OneDrive write tool must not prevent read-only collection.
+3. Select **Load snapshot**. Choose the returned file or paste its JSON and confirm the report's work-account email. Without an output folder, the validated preview lasts until the server restarts.
+4. To keep results, sync a work OneDrive folder, mark it **Always keep on this device**, and enter its existing local path and report account in **Collection setup**. The next successful import saves `snapshot.json` and generates the reports there. Settings stay in ignored `.local/settings.json`.
 
 `PROJECT_DATA_DIR` and `EXPECTED_WORK_ACCOUNT` can set the same values through environment variables. `PORT` defaults to 4317. V1 only binds to loopback and refuses unprotected remote/Azure hosting.
 
@@ -46,7 +48,7 @@ Use [agent-instructions.txt](collector/agent-instructions.txt) for the agent's g
 
 **Cowork remains another option:** place the same skill in your work OneDrive at `Documents/Cowork/skills/cpsync-dashboard/SKILL.md`, then start a new Cowork session, or use Cowork's Customize > Skills > Upload skill option. See [Microsoft's Cowork instructions](https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork#upload-a-skill). The full OneDrive setup ZIP is a folder installation bundle; use the individual skill package above in Agent Builder.
 
-Use **Collect with Copilot** in the dashboard to copy `collector/run-prompt.txt`, or open that file directly. The prompt requests the current signed-in work identity, a 14-day CPSync search, real source permalinks, and an honest source-coverage report. A pending manual run must not be described as successful or automatically scheduled.
+Use **Get snapshot request** to copy or download the request with its complete JSON contract. A standalone copy is in [collector/snapshot-request.txt](collector/snapshot-request.txt). The request permits a downloadable file or complete JSON response. The user's confirmed work email is report metadata; the Microsoft host's sign-in remains the actual authentication boundary. No separate identity API is required.
 
 After a reviewed manual run, recurring collection can be configured **inside Microsoft Copilot**, subject to corporate policy and allowed user-context actions. Node polls files every 15 seconds; that polling does not trigger Copilot or grant access to any source.
 

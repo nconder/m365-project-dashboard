@@ -34,7 +34,7 @@
     </header>
     <main id="main" tabindex="-1">
       <div id="sample-banner" class="notice sample" hidden>FICTIONAL SAMPLE PREVIEW · This demonstrates the interface. No company information has been collected.</div>
-      <div class="page-heading"><div><p class="eyebrow">PROJECT WORKSPACE</p><h1 id="page-title">Project overview</h1><p id="page-subtitle">The context you need. The evidence behind it.</p></div><div class="page-tools"><button id="refresh-button" class="button secondary"><span>↻</span> Refresh files</button><button id="collect-button" class="button primary"><span>✧</span> Collect with Copilot</button></div></div>
+      <div class="page-heading"><div><p class="eyebrow">PROJECT WORKSPACE</p><h1 id="page-title">Project overview</h1><p id="page-subtitle">The context you need. The evidence behind it.</p></div><div class="page-tools"><button id="refresh-button" class="button secondary"><span>↻</span> Refresh files</button><button id="collect-button" class="button secondary">Get snapshot request</button><button id="import-button" class="button primary">Load snapshot</button></div></div>
       <div class="context-bar"><span id="connection-label" class="connection-label"><i class="status-dot amber"></i> Checking OneDrive</span><span id="updated-label">Waiting for collection</span><span class="identity-note">Your account · Your permissions</span></div>
       <div id="error-banner" class="notice warning" role="status" hidden></div>
       <div id="content" aria-live="polite"><div class="loading">Opening your project workspace…</div></div>
@@ -44,11 +44,23 @@
 
   <dialog id="collector-dialog" aria-labelledby="collector-title">
     <form method="dialog"><button class="close-button" aria-label="Close collection instructions">×</button></form>
-    <p class="eyebrow">MICROSOFT COPILOT COLLECTION</p><h2 id="collector-title">Bring CPSync into focus.</h2>
-    <p>Run this in your approved Microsoft 365 Copilot or Cowork experience, signed in with your work account. Collection runs there; this dashboard reads the resulting files.</p>
+    <p class="eyebrow">MANUAL SNAPSHOT EXPORT</p><h2 id="collector-title">Get a briefing from your existing agent.</h2>
+    <p>This dashboard is not connected to your Microsoft agent. Copy this request into your existing CPSync agent, or download and attach it there. It includes the complete snapshot format and permits a download or JSON response when the agent cannot write to OneDrive.</p>
     <label for="collector-prompt">CPSync collection instructions</label><textarea id="collector-prompt" readonly rows="12"></textarea>
-    <div class="dialog-actions"><button id="copy-prompt" class="button secondary">Copy instructions</button><a class="button primary" href="https://copilot.cloud.microsoft" target="_blank" rel="noopener noreferrer">Open Microsoft Copilot ↗</a></div>
-    <p class="helper" id="copy-status" role="status">A browser refresh checks OneDrive files. It does not start an agent.</p>
+    <div class="dialog-actions"><button id="copy-prompt" class="button primary">Copy full request</button><a class="button secondary" href="/collector/request">Download request ↓</a><button class="button secondary" data-import>Load returned snapshot</button></div>
+    <p class="helper" id="copy-status" role="status">OneDrive writing and an identity API are not required for manual export. Use your work Microsoft sign-in and confirm the report's account email inside your agent.</p>
+  </dialog>
+  <dialog id="import-dialog" aria-labelledby="import-title">
+    <form method="dialog"><button class="close-button" aria-label="Close snapshot import">×</button></form>
+    <p class="eyebrow">YOUR COPILOT RESULT</p><h2 id="import-title">Load a CPSync snapshot</h2>
+    <p>Choose the JSON file returned by your work agent, or paste its JSON below. The dashboard checks the account, project, and source references before accepting it.</p>
+    <form id="snapshot-import-form">
+      <label for="import-account">Work account used for this report</label><input id="import-account" type="email" required autocomplete="email" placeholder="you@company.com">
+      <label for="snapshot-file">Choose snapshot.json</label><input id="snapshot-file" type="file" accept=".json,application/json">
+      <label for="snapshot-text">Or paste the returned JSON</label><textarea id="snapshot-text" rows="8" required spellcheck="false" placeholder="Paste the complete JSON object here"></textarea>
+      <p class="helper">With an output folder configured, this saves the validated snapshot there. Otherwise it opens a session preview that disappears when the server restarts. The reported email is a label check, not Microsoft authentication.</p>
+      <p id="import-status" class="helper" role="status"></p><div class="dialog-actions"><button id="load-snapshot" class="button primary" type="submit">Validate and load</button></div>
+    </form>
   </dialog>
   <dialog id="sources-dialog" aria-labelledby="sources-title"><form method="dialog"><button class="close-button" aria-label="Close source references">×</button></form><p class="eyebrow">FOLLOW THE EVIDENCE</p><h2 id="sources-title">Source references</h2><div id="sources-content"></div></dialog>
   <div id="toast" class="toast" role="status" hidden></div>

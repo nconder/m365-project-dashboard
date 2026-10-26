@@ -1,6 +1,6 @@
 {
   "project": { "id": "cpsync", "name": "CPSync", "aliases": ["CPSync"] },
-  "collection": { "provider": "microsoft-copilot", "identity": "signed-in-work-user", "windowDays": 14, "documentScope": "all-accessible-work-onedrive" },
+  "collection": { "provider": "microsoft-copilot", "identity": "signed-in-work-user", "windowDays": 14, "documentScope": "all-accessible-work-onedrive", "delivery": "manual-export-or-approved-onedrive-write" },
   "output": { "folder": "ProjectDashboard/CPSync", "snapshot": "snapshot.json", "supporting": "supporting" },
   "meetingSeries": [],
   "sourceFolders": [],

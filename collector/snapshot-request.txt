@@ -1,0 +1,77 @@
+Collect an evidence-linked CPSync project briefing for the last 14 days using my signed-in Microsoft work account. The intended report account is {{WORK_ACCOUNT}}; ask me to confirm it locally if needed.
+
+This request explicitly permits MANUAL EXPORT. Work-data search is sufficient to start collection. Do not stop because OneDrive creation/update, an identity API, or an installed skill is unavailable. Use the installed cpsync-dashboard skill if available and the complete snapshot contract included below. If no work-data search is available, report that actual limitation and do not fabricate evidence.
+
+Use only approved Microsoft tools under my current work sign-in. The email I confirm is a report label for collector.userPrincipalName, not proof of authentication. Do not request passwords, tokens, app-only access, another person's connection, or new permissions just to enable saving. Do not infer my identity from a document author or sample.
+
+Search CPSync meeting transcripts, recaps, and discussions, and relevant documents across all work OneDrive locations my account can access, including accessible shared content. Documents may have generic filenames. Establish CPSync relevance from contents and verified meeting/document references. No source folder is required. Optional links are hints, not limits. Keep originals where they are. Consult older evidence when needed to explain current actions, decisions, or risks.
+
+Produce the complete snapshot.json defined by the contract below, with real Microsoft 365 source links supporting every finding. Use actual dates, current UTC collection time, the correct collector kind, and the user-confirmed work email. Never invent facts, links, owners, dates, or project status. Mark selected-source searches, missing access, and incomplete coverage honestly.
+
+Read an earlier snapshot if one is accessible or supplied, preserve unresolved items, and reconcile changes. If none is available, say historical reconciliation was unavailable and continue the first collection. Generated reports, snapshots, and setup files are not independent primary evidence.
+
+DELIVERY: If file generation is available, return snapshot.json as a downloadable UTF-8 JSON file. If it is unavailable, return the complete JSON in one code block without ellipses or omitted arrays so I can paste it into the dashboard. A OneDrive save is optional: perform it only if requested and supported by an approved tool, using my selected output folder (default ProjectDashboard/CPSync). A download or JSON response must never be described as a OneDrive save.
+
+Use Microsoft Office tools for supporting presentation files only when requested and available. Do not send messages, share files, change project tasks, or broaden permissions. After returning the snapshot, briefly state the actual delivery method and missing source coverage. Do not claim the local dashboard has refreshed.
+
+
+## Snapshot contract
+
+Every field shown below is required except optional record detail/date/owner fields. Empty arrays are allowed. Unknown owners can be omitted or written as `Unknown`; unknown dates must be omitted, never guessed or written as a fabricated date.
+
+Set `collector.kind` to the actual host: `microsoft-365-copilot` for a Microsoft 365 Agent Builder agent, `copilot-studio` for a Copilot Studio agent, or `copilot-cowork` for Cowork. Never copy a different host's identity or kind.
+
+```json
+{
+  "schemaVersion": 1,
+  "project": { "id": "cpsync", "name": "CPSync" },
+  "collectedAt": "ACTUAL_UTC_TIMESTAMP",
+  "collector": {
+    "kind": "ACTUAL_SUPPORTED_COLLECTOR_KIND",
+    "userPrincipalName": "ACTUAL_SIGNED_IN_WORK_ACCOUNT"
+  },
+  "coverage": {
+    "windowStart": "YYYY-MM-DD",
+    "windowEnd": "YYYY-MM-DD",
+    "meetings": { "status": "partial", "note": "Explain the checked scope and missing access." },
+    "documents": { "status": "partial", "note": "Explain the checked scope and missing access." },
+    "messages": { "status": "not-requested", "note": "Explain whether supporting messages were checked." }
+  },
+  "summary": {
+    "headline": "An evidence-supported project headline, or an honest statement that no briefing could be established.",
+    "overview": "The grounded summary, including any material uncertainty.",
+    "health": "unknown",
+    "sourceIds": []
+  },
+  "sources": [],
+  "meetings": [],
+  "decisions": [],
+  "actions": [],
+  "risks": [],
+  "documents": [],
+  "presentation": { "talkingPoints": [] }
+}
+```
+
+Replace the collector-kind, timestamp, and account placeholders with actual supported values. Never save them as literal placeholders.
+
+Coverage status: `complete`, `partial`, `unavailable`, or `not-requested`. Health: `on-track`, `at-risk`, `blocked`, or `unknown`. Use unknown health unless evidence explicitly supports a status. A collection with no sources must have unknown health, no records/talking points, and no complete coverage claims.
+
+### Sources
+
+Each source is `{ "id": "stable-source-id", "kind": "meeting|document|message|email", "title": "Actual source title", "url": "Actual HTTPS Microsoft 365 permalink", "date": "Actual date, optional" }`.
+
+Only include accessible original Teams, Outlook, Office, OneDrive, or tenant SharePoint permalinks. Do not invent a link, use an expiring download URL, or save an access token in a URL. Source IDs must be unique.
+
+### Records
+
+All records require a stable unique `id`, factual `title`, and non-empty `sourceIds` referencing entries in sources. Use these fields:
+
+- `meetings`: optional `date`, `organizer`, `summary`.
+- `decisions`: optional `detail`, `owner`, `decidedAt`.
+- `actions`: optional `owner`, `dueDate`; required `status`: `open`, `in-progress`, `done`, or `blocked`.
+- `risks`: optional `detail`, `owner`; required `severity`: `low`, `medium`, or `high`. State in detail when a risk is an inference rather than an explicitly reported risk.
+- `documents`: optional `summary`, `modifiedAt`.
+- `presentation.talkingPoints`: objects with `text` and non-empty `sourceIds`; at most 30.
+
+`summary.sourceIds` must cite evidence when sources exist. All dates must be real ISO dates `YYYY-MM-DD`, or UTC timestamps `YYYY-MM-DDTHH:mm:ssZ`. `collectedAt` must be a UTC timestamp. Do not invent project budgets, spending, owners, commitments, dates, decisions, or status.

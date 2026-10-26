@@ -8,3 +8,9 @@
 @media print{.sidebar,.topbar,.page-tools,.context-bar,.page-footer,.notice,.evidence-button,.panel-bottom-link,.setup-link{display:none!important}.workspace{margin:0}main{max-width:none;padding:0}body{background:white}.overview-grid,.overview-aside{display:block}.panel{break-inside:avoid;margin:15px 0}.brief-panel{background:white;color:#18332e;border:1px solid #dce5dc}.brief-panel .brief-text,.brief-panel .panel-header h2{color:#47624e}.brief-panel:after{display:none}.stats-grid{gap:8px}.brief-footer{color:#57745d}.brief-panel .badge{color:#18332e;background:#edf4e9}h1{font-size:26px}.document-grid{display:block}.document-card{margin:10px 0}.talking-point{break-inside:avoid}}
 
 [data-setup-health]{margin-top:20px}
+
+.page-tools{flex-wrap:wrap;justify-content:flex-end}
+#snapshot-import-form{display:grid;gap:10px;margin-top:20px}
+#snapshot-import-form input[type=email],#snapshot-import-form textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink)}
+#snapshot-import-form textarea{font-family:Consolas,monospace;font-size:12px;resize:vertical}
+#snapshot-import-form .dialog-actions{margin-top:0}

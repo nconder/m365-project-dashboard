@@ -9,14 +9,18 @@ Use this skill when the user asks to collect, refresh, brief, or prepare present
 
 ## Required host capabilities
 
-Before searching or saving, establish the active work identity and check which approved Microsoft tools this host actually provides. A skill supplies instructions, not authentication or new tools. Use only access authenticated as the current end user; a maker-owned connection is not a substitute for runtime end-user authentication.
+Use the current user's Microsoft work sign-in and approved work-data search. A skill supplies instructions, not authentication or new tools. Use only access authenticated as the current end user; a maker-owned connection is not a substitute for runtime end-user authentication.
 
-The collection requires accessible Microsoft 365 work search and an approved way to create/update the target file in the user's work OneDrive. Downloading a generated attachment or adding a knowledge source does not prove OneDrive write access. If an essential capability or the current identity cannot be established, stop and describe the missing capability. Do not invent a snapshot or report an unsaved file as saved. A user-directed manual export must be described as manual and must not be presented as automatic collection.
+Work-data search is required for evidence collection. OneDrive writing is optional. Never block searching or preparing a snapshot solely because a OneDrive write tool or an identity API is unavailable. If work search is unavailable, explain that limit and do not invent evidence.
+
+For the report label, use the work email that the user confirms they are using in Microsoft. Ask if it has not been provided. An independent identity API is not required. Record that email in collector.userPrincipalName as user-confirmed metadata; do not claim it is cryptographic proof of authentication, and never infer it from a document author.
+
+When OneDrive writing is unavailable, perform read-only collection and return a complete downloadable snapshot.json if file generation is available. Otherwise return the complete JSON in one code block for the user to copy into the dashboard. This manual export is explicitly permitted and must not be described as a OneDrive save or an automatic connection. Do not request new permissions merely to enable a write.
 
 ## Identity and scope
 
 - Use the signed-in user's Microsoft 365 work account and only approved Microsoft 365 tools. Never request API keys, app-only grants, another person's connection, or a service account.
-- Identify the actual work-account UPN. Ask the user if it cannot be established; do not infer it from a document author or an example.
+- Confirm the report's work-account email with the user or the Microsoft account context. If no identity API is available, the user's confirmation is sufficient for this metadata field; do not claim independent identity verification.
 - The project is exactly `CPSync`, ID `cpsync`. Ask before adding aliases or unrelated projects.
 - Search meeting transcripts, recaps, meeting chats, and work OneDrive documents available to the user. Consult Outlook or Teams messages only as supporting context.
 - Discover documents across all work OneDrive locations accessible to that user, including accessible shared OneDrive content. A project folder or source-folder link is not required. Optional folder links are search hints, not an allowlist or a reason to skip other locations. Never require moving or copying the original documents into a project folder.
@@ -27,12 +31,14 @@ The collection requires accessible Microsoft 365 work search and an approved way
 
 ## Output location and safety
 
-In the user's work OneDrive, use `ProjectDashboard/CPSync/`:
+If an approved OneDrive write tool is available and a save is requested, use the user's selected output folder (default `ProjectDashboard/CPSync/`):
 
 - `snapshot.json`: the current complete snapshot, UTF-8, at most 2 MB.
 - `supporting/`: presentation materials created with Microsoft Office skills when requested.
 
 This is the output location only; source documents remain in their original OneDrive locations. Read old snapshots to reconcile history, but never treat generated snapshots/reports, presentation derivatives, or collector setup files as independent primary evidence about CPSync. Cite and verify original sources instead.
+
+If direct saving is unavailable, return the snapshot for manual import instead. The dashboard can load a JSON file or pasted JSON and save it locally to its configured synced output folder. If no previous snapshot was supplied or accessible, state that historical reconciliation could not be performed; that does not prevent a first collection.
 
 Preserve existing files and original sources. Read an existing snapshot before updating it. Use stable IDs. Reconcile completed actions; do not remove an unresolved action only because its source did not appear in the newest search. If it cannot be rechecked, retain it with an explicit note and mark coverage partial. The local dashboard archives accepted snapshots and creates HTML and Markdown reports.
 
@@ -101,11 +107,11 @@ All records require a stable unique `id`, factual `title`, and non-empty `source
 
 ## Before saving
 
-1. Verify the work account and CPSync project match.
+1. Confirm the report's work-account email and CPSync project. Do not require an identity API for this metadata check.
 2. Check that each source is real and each finding has supporting evidence.
 3. Reconcile existing unresolved items and explain limitations in coverage.
 4. Validate JSON syntax; remove placeholders and any unsupported claims.
-5. Save a complete snapshot rather than a truncated response. If atomic file replacement is available, use it.
-6. Report the saved location and coverage honestly. Saving in OneDrive does not prove desktop sync or local dashboard refresh.
+5. Return a complete downloadable snapshot.json or one complete JSON code block. If an approved OneDrive write is requested and available, save the complete file there using atomic replacement when supported.
+6. Report the actual delivery: download, pasted JSON, or verified OneDrive save. Do not claim a cloud save, desktop sync, or dashboard refresh without evidence of that specific step.
 
 For recurring collection, first complete and review a manual run. Set up a recurring task only when requested by the user and allowed by the organisation. Recurring runs must keep the same identity, scope, output contract, and evidence rules; pause and report any authentication or source-access failure.

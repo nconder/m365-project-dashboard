@@ -11,7 +11,7 @@ const views = {
   decisions: ['Decisions & actions', 'What was agreed. What happens next.'],
   documents: ['Project documents', 'The working files behind the bigger picture.'],
   presentation: ['Presentation pack', 'Your project story, ready to take into the room.'],
-  setup: ['Collection setup', 'Connect your files. Keep access under your work account.']
+  setup: ['Collection setup', 'Choose where to keep exported snapshots and reports.']
 };
 
 function formattedDate(value, time = false) {
@@ -68,11 +68,11 @@ function renderOverview() {
     activity = `<div class="timeline">${recent.map(item => `<article class="timeline-item"><span class="item-icon ${escape(item.kind)}">${item.kind === 'meeting' ? '◷' : item.kind === 'document' ? '▤' : '◌'}</span><div><h3 class="item-title">${escape(item.title)}</h3><p class="item-text">${escape(item.kind === 'meeting' ? snapshot.meetings.find(meeting => meeting.sourceIds.includes(item.id))?.summary || 'Meeting source' : item.kind === 'document' ? snapshot.documents.find(document => document.sourceIds.includes(item.id))?.summary || 'Document source' : 'Supporting project conversation')}</p><div class="item-bottom"><span>${formattedDate(item.date)}</span>${evidence([item.id])}</div></div></article>`).join('')}</div>`;
     documents = snapshot.documents.length ? `<div class="panel-body document-grid">${documentCards(snapshot.documents.slice(0, 2))}</div>` : empty('No document findings', 'This collection did not return any supported document updates.');
   } else {
-    brief = `<section class="panel brief-panel"><div class="panel-header"><h2><span aria-hidden="true">✧</span> The project brief</h2><span class="badge">Ready to connect</span></div><div class="panel-body"><p class="eyebrow">CPSYNC / YOUR NEXT CLEAR PICTURE</p><h2 class="brief-title">Your project,<br>in focus.</h2><p class="brief-text">Bring your meetings, decisions, and working documents together. Microsoft Copilot collects the context; this workspace makes it easy to use.</p><div class="brief-footer"><span>Your work account. Your existing access.</span><button class="evidence-button" data-collect>Get started ↗</button></div></div></section>`;
+    brief = `<section class="panel brief-panel"><div class="panel-header"><h2><span aria-hidden="true">✧</span> The project brief</h2><span class="badge">Waiting for snapshot</span></div><div class="panel-body"><p class="eyebrow">CPSYNC / YOUR NEXT CLEAR PICTURE</p><h2 class="brief-title">Your project,<br>in focus.</h2><p class="brief-text">Bring your meetings, decisions, and working documents together. Microsoft Copilot collects the context; this workspace makes it easy to use.</p><div class="brief-footer"><span>Your work account. Your existing access.</span><button class="evidence-button" data-collect>Get snapshot request ↗</button></div></div></section>`;
     activity = empty('Your project story starts here', 'Run a CPSync collection in Microsoft Copilot to see recent meetings, documents, and decisions.', '<button class="button secondary small" data-collect>View collection instructions →</button>');
     documents = empty('The evidence, within reach', 'Your collector will link relevant OneDrive documents here. Originals stay in Microsoft 365.');
   }
-  return `${stats}<div class="overview-grid"><div class="overview-main">${brief}<section class="panel"><div class="panel-header"><div><h2>Recent project activity</h2><p>A connected view of the latest evidence.</p></div><button class="button ghost small" data-view="meetings">View meetings ↗</button></div>${activity}</section><section class="panel"><div class="panel-header"><h2>Evidence library</h2><button class="button ghost small" data-view="documents">All documents ↗</button></div>${documents}</section></div><div class="overview-aside"><section class="panel"><div class="panel-header"><div><h2>Keep things moving</h2><p>Actions that still need attention.</p></div><span class="badge gray">${snapshot ? actions.length : '—'} open</span></div>${actions.length ? `<div class="actions-list">${actionRows(actions.slice(0, 4))}</div>` : empty(snapshot ? 'No open actions reported' : 'A clearer next step', snapshot ? 'This collection has no open actions. Check coverage before treating it as complete.' : 'Owners, due dates, and follow-ups will appear after collection.')}<button class="panel-bottom-link" data-view="decisions">View decisions & actions →</button></section>${coveragePanel()}${!snapshot ? `<section class="panel"><div class="panel-header"><h2>Three steps to your first brief</h2></div><div class="onboarding-steps"><div class="step"><span class="step-number">01</span><strong>Connect work OneDrive</strong>Choose the local synced CPSync folder.</div><div class="step"><span class="step-number">02</span><strong>Collect with Copilot</strong>Use the project instructions in your work account.</div><div class="step"><span class="step-number">03</span><strong>Present the findings</strong>Open the report and supporting Office files.</div></div></section>` : ''}</div></div>`;
+  return `${stats}<div class="overview-grid"><div class="overview-main">${brief}<section class="panel"><div class="panel-header"><div><h2>Recent project activity</h2><p>A connected view of the latest evidence.</p></div><button class="button ghost small" data-view="meetings">View meetings ↗</button></div>${activity}</section><section class="panel"><div class="panel-header"><h2>Evidence library</h2><button class="button ghost small" data-view="documents">All documents ↗</button></div>${documents}</section></div><div class="overview-aside"><section class="panel"><div class="panel-header"><div><h2>Keep things moving</h2><p>Actions that still need attention.</p></div><span class="badge gray">${snapshot ? actions.length : '—'} open</span></div>${actions.length ? `<div class="actions-list">${actionRows(actions.slice(0, 4))}</div>` : empty(snapshot ? 'No open actions reported' : 'A clearer next step', snapshot ? 'This collection has no open actions. Check coverage before treating it as complete.' : 'Owners, due dates, and follow-ups will appear after collection.')}<button class="panel-bottom-link" data-view="decisions">View decisions & actions →</button></section>${coveragePanel()}${!snapshot ? `<section class="panel"><div class="panel-header"><h2>Three steps to your first brief</h2></div><div class="onboarding-steps"><div class="step"><span class="step-number">01</span><strong>Choose an output folder</strong>Optional: keep exported results in work OneDrive.</div><div class="step"><span class="step-number">02</span><strong>Request a snapshot</strong>Use the full request in your existing work agent.</div><div class="step"><span class="step-number">03</span><strong>Load and present</strong>Load the returned JSON and open the report.</div></div></section>` : ''}</div></div>`;
 }
 
 function searchTools(caption) {
@@ -83,7 +83,7 @@ function matches(item) { return JSON.stringify(item).toLowerCase().includes(sear
 
 function renderMeetings() {
   const meetings = state.snapshot?.meetings.filter(matches) || [];
-  return `${searchTools(`${state.snapshot?.meetings.length || 0} meetings in the current collection`)}<section class="panel">${meetings.length ? `<div class="full-list">${meetings.map(item => `<article class="timeline-item"><span class="item-icon">◷</span><div><h2 class="item-title">${escape(item.title)}</h2><p class="item-text">${escape(item.summary || 'See source references for the meeting details.')}</p><div class="item-bottom"><span>${formattedDate(item.date, true)}</span><span>${escape(item.organizer || 'Organiser unknown')}</span>${evidence(item.sourceIds)}</div></div></article>`).join('')}</div>` : empty(search ? 'No matching meetings' : 'Meetings, with the context attached', search ? 'Try another title or keyword.' : 'Your Copilot collector will add supported CPSync meeting summaries here.', '<button class="button secondary small" data-collect>Collect with Microsoft Copilot →</button>')}</section>`;
+  return `${searchTools(`${state.snapshot?.meetings.length || 0} meetings in the current collection`)}<section class="panel">${meetings.length ? `<div class="full-list">${meetings.map(item => `<article class="timeline-item"><span class="item-icon">◷</span><div><h2 class="item-title">${escape(item.title)}</h2><p class="item-text">${escape(item.summary || 'See source references for the meeting details.')}</p><div class="item-bottom"><span>${formattedDate(item.date, true)}</span><span>${escape(item.organizer || 'Organiser unknown')}</span>${evidence(item.sourceIds)}</div></div></article>`).join('')}</div>` : empty(search ? 'No matching meetings' : 'Meetings, with the context attached', search ? 'Try another title or keyword.' : 'Your Copilot collector will add supported CPSync meeting summaries here.', '<button class="button secondary small" data-collect>Get snapshot request →</button>')}</section>`;
 }
 
 function dataTable(items, columns) {
@@ -111,9 +111,8 @@ function renderPresentation() {
 }
 
 function renderSetup() {
-  return `<div class="setup-grid"><div><section class="panel"><div class="panel-header"><div><h2>Your work OneDrive folder</h2><p>The dashboard reads local synced files under your Windows account.</p></div>${badge(state.storage.available ? 'complete' : 'not-requested')}</div><form id="settings-form" class="settings-form"><div><label for="folder">Local CPSync folder</label><input id="folder" name="folder" required value="${escape(state.storage.folder)}" placeholder="C:\\Users\\you\\OneDrive - Company\\ProjectDashboard\\CPSync" autocomplete="off"><p class="helper">Sync your work OneDrive first, create this project folder, and select “Always keep on this device.” The folder must already exist.</p></div><div><label for="work-account">Your Microsoft 365 work account</label><input id="work-account" name="expectedAccount" type="email" required value="${escape(state.storage.expectedAccount)}" placeholder="you@company.com" autocomplete="email"><p class="helper">The collector must report this account. This setting checks the file’s reported identity; it does not authenticate you to Microsoft.</p></div><div><button class="button primary" type="submit" ${state.demo ? 'disabled' : ''}>Connect project folder</button></div><p id="form-status" class="form-status" role="status"></p></form></section><div class="privacy-card"><h3>Your account is the boundary.</h3><p>Microsoft Copilot collects using your work account. OneDrive handles cloud sign-in and sync. This app reads your local files and stores no Microsoft API tokens. A generated report contains copied findings, so only share it with authorised people.</p></div></div><div><section class="panel"><div class="panel-header"><h2>Set up the Microsoft collector</h2></div><div class="setup-instructions"><ol><li>In your work OneDrive, create <code>ProjectDashboard/CPSync</code> with a <code>supporting</code> subfolder.</li><li>Place the supplied collector skill at <code>Documents/Cowork/skills/cpsync-dashboard/SKILL.md</code>, if custom skills are available in your organisation.</li><li>Start a new Microsoft Copilot Cowork session. Use the CPSync collection instructions and confirm your work account.</li><li>Save the validated collection as <code>ProjectDashboard/CPSync/snapshot.json</code>. Keep supporting Office files in <code>supporting</code>.</li><li>After a successful manual collection, configure a recurring task inside Microsoft Copilot if your organisation allows it. The dashboard refreshes files automatically every 15 seconds.</li></ol><div class="dialog-actions"><a href="/collector/skill" class="button secondary small">Download skill ↓</a><button class="button primary small" data-collect>Collection instructions ↗</button></div></div></section><section class="panel" data-setup-health><div class="panel-header"><h2>Connection details</h2></div><div class="panel-body"><p class="helper">Storage: ${state.storage.available ? 'Folder is available on this desktop' : 'Not connected'}<br>Latest file check: ${formattedDate(state.collection.checkedAt, true)}<br>Collector reported: ${escape(state.snapshot?.collector.userPrincipalName || 'No collection yet')}<br>Application API tokens: none<br>Collection: Microsoft Copilot agents only</p></div></section></div></div>`;
+  return `<div class="setup-grid"><div><section class="panel"><div class="panel-header"><div><h2>Dashboard output folder (optional)</h2><p>Keep snapshots and reports in your synced work OneDrive, or load a session preview without a folder.</p></div>${badge(state.storage.available ? 'complete' : 'not-requested')}</div><form id="settings-form" class="settings-form"><div><label for="folder">Local dashboard output folder</label><input id="folder" name="folder" required value="${escape(state.storage.folder)}" placeholder="C:\\Users\\you\\OneDrive - Company\\ProjectDashboard\\CPSync" autocomplete="off"><p class="helper">Choose any existing synced work OneDrive folder and select “Always keep on this device.” This holds exported results; original project documents stay wherever they are.</p></div><div><label for="work-account">Work account used for reports</label><input id="work-account" name="expectedAccount" type="email" required value="${escape(state.storage.expectedAccount)}" placeholder="you@company.com" autocomplete="email"><p class="helper">Checks the report’s account label. Microsoft sign-in happens inside your work agent.</p></div><div><button class="button primary" type="submit" ${state.demo ? 'disabled' : ''}>Save output folder</button></div><p id="form-status" class="form-status" role="status"></p></form></section><div class="privacy-card"><h3>Company access stays in Microsoft.</h3><p>Your work agent searches under your Microsoft sign-in. This app does not connect to your organization or hold Microsoft API tokens. Load only results you are authorised to use on this device.</p></div></div><div><section class="panel"><div class="panel-header"><h2>Get your first snapshot</h2></div><div class="setup-instructions"><ol><li>Copy or download the full snapshot request. It includes the JSON format; installing a skill is optional.</li><li>Send it to your existing CPSync work agent. OneDrive writing and an identity API are not required for read-only collection.</li><li>Download its <code>snapshot.json</code>, or copy the complete JSON response.</li><li>Select <strong>Load snapshot</strong> here. Choose the file or paste its JSON, and confirm the report account.</li><li>With an output folder set, validated results and reports are saved there. Otherwise the preview lasts until this server restarts.</li></ol><div class="dialog-actions"><button class="button secondary small" data-collect>Get snapshot request</button><button class="button primary small" data-import>Load snapshot</button></div></div></section><section class="panel"><div class="panel-header"><h2>Actual connection status</h2></div><div class="panel-body"><p class="helper">Agent connection: none · manual export/import<br>Automatic collection: unavailable<br>Output folder: ${state.storage.available ? 'Available on this desktop' : 'Not configured or unavailable'}<br>Reported account: ${escape(state.snapshot?.collector.userPrincipalName || 'No snapshot loaded')}<br>Microsoft API tokens held by this app: none</p></div></section></div></div>`;
 }
-
 function render() {
   if (!state) return;
   $('#page-title').textContent = views[view][0];
@@ -123,7 +122,7 @@ function render() {
   const connection = $('#connection-label');
   connection.replaceChildren();
   const dot = document.createElement('i'); dot.className = `status-dot ${state.storage.available || state.demo ? '' : 'amber'}`; connection.append(dot);
-  connection.append(document.createTextNode(state.demo ? 'Fictional sample data' : state.storage.available ? 'Project folder available' : 'OneDrive folder not connected'));
+  connection.append(document.createTextNode(state.demo ? 'Fictional sample data' : state.collection.manualPreview ? 'Session preview · not saved to OneDrive' : state.storage.available ? 'Output folder available · manual collection' : 'Output folder not set · preview available'));
   $('#updated-label').textContent = state.snapshot ? `Collected ${formattedDate(state.snapshot.collectedAt, true)}` : 'No project data collected yet';
   $('#nav-meetings').textContent = state.snapshot?.meetings.length || 0;
   $('#nav-documents').textContent = state.snapshot?.documents.length || 0;
@@ -172,6 +171,14 @@ async function openCollector() {
   } catch (error) { toast(error.message); }
 }
 
+function openImport() {
+  if (state.demo) return toast('Open the real dashboard to load a snapshot.');
+  if ($('#collector-dialog').open) $('#collector-dialog').close();
+  $('#import-account').value = state.storage.expectedAccount || state.snapshot?.collector.userPrincipalName || '';
+  $('#snapshot-file').value = ''; $('#snapshot-text').value = ''; $('#import-status').textContent = '';
+  $('#import-dialog').showModal();
+}
+
 function openSources(ids) {
   const sources = state.snapshot?.sources.filter(source => ids.includes(source.id)) || [];
   $('#sources-content').innerHTML = sources.map(source => `<article class="source-item"><span class="badge gray">${escape(source.kind)}</span><a href="${escape(source.url)}" target="_blank" rel="noopener noreferrer">${escape(source.title)} ↗</a><small>${formattedDate(source.date)}</small></article>`).join('');
@@ -183,6 +190,7 @@ document.addEventListener('click', event => {
   if (!button) return;
   if (button.dataset.view) { view = button.dataset.view; search = ''; render(); }
   if (button.hasAttribute('data-collect')) openCollector();
+  if (button.hasAttribute('data-import')) openImport();
   if (button.dataset.sources) openSources(JSON.parse(button.dataset.sources));
   if (button.hasAttribute('data-presentation')) {
     presentationMode = true; view = 'overview';
@@ -202,17 +210,43 @@ document.addEventListener('input', event => {
   if (Number.isInteger(position)) $('#search').setSelectionRange(position, position);
 });
 document.addEventListener('submit', async event => {
+  if (event.target.id === 'snapshot-import-form') {
+    event.preventDefault();
+    const status = $('#import-status'); const button = $('#load-snapshot');
+    button.disabled = true; status.textContent = 'Checking the snapshot…';
+    try {
+      const text = $('#snapshot-text').value.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1');
+      if (new Blob([text]).size > 2 * 1024 * 1024) throw new Error('Snapshot exceeds the 2 MB limit.');
+      let snapshot;
+      try { snapshot = JSON.parse(text); } catch { throw new Error('Paste the complete JSON returned by Copilot, or choose its snapshot.json file.'); }
+      state = await api('/api/import-snapshot', { snapshot, expectedAccount: $('#import-account').value });
+      $('#import-dialog').close(); view = 'overview'; search = ''; render();
+      toast(state.collection.manualPreview ? 'Snapshot loaded for this session. Configure an output folder to keep it.' : 'Snapshot saved and dashboard updated.');
+    } catch (error) { status.textContent = error.message; }
+    finally { button.disabled = false; }
+    return;
+  }
   if (event.target.id !== 'settings-form') return;
   event.preventDefault();
   const input = Object.fromEntries(new FormData(event.target));
   const status = $('#form-status'); status.textContent = 'Checking project folder…';
-  try { state = await api('/api/settings', input); render(); $('#form-status').textContent = 'Folder connected. Run the collector to provide snapshot.json.'; }
+  try { state = await api('/api/settings', input); render(); $('#form-status').textContent = 'Output folder saved. Load the snapshot returned by your work agent.'; }
   catch (error) { status.textContent = error.message; }
 });
 $('#refresh-button').addEventListener('click', () => refresh(true));
 $('#collect-button').addEventListener('click', openCollector);
+$('#import-button').addEventListener('click', openImport);
+$('#snapshot-file').addEventListener('change', async event => {
+  const file = event.target.files[0];
+  $('#snapshot-text').value = ''; $('#import-status').textContent = '';
+  if (!file) return;
+  try {
+    if (file.size > 2 * 1024 * 1024) throw new Error('Snapshot exceeds the 2 MB limit.');
+    $('#snapshot-text').value = await file.text();
+  } catch (error) { $('#import-status').textContent = error.message; }
+});
 $('#copy-prompt').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText($('#collector-prompt').value); $('#copy-status').textContent = 'Copied. Paste these instructions into Microsoft Copilot under your work account.'; }
+  try { await navigator.clipboard.writeText($('#collector-prompt').value); $('#copy-status').textContent = 'Copied. Paste this request into your existing work agent, then load the JSON it returns.'; }
   catch { $('#collector-prompt').focus(); $('#collector-prompt').select(); $('#copy-status').textContent = 'Select and copy the instructions above.'; }
 });
 refresh();
