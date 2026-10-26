@@ -24,14 +24,14 @@ Download the actual upload file from GitHub using **Download raw file**. Do not 
 
 Use the work account that owns CPSync throughout. Keep work emails, meeting links, source-folder configuration, and collected company data in your private work OneDrive copy, outside this Git repository.
 
-**Source folder versus output folder:** Use the existing OneDrive folder containing your actual CPSync project documents as a source. `ProjectDashboard/CPSync` is the collector's output folder for snapshots and reports. It does not need to be added as knowledge, and setup files or generated reports are not independent evidence about the project.
+**Documents can live anywhere in accessible work OneDrive.** No project source folder is required. The agent should find CPSync documents by relevance across locations, including accessible shared OneDrive content, without moving the originals. Use document contents and verified meeting/document links to establish project relevance; a CPSync filename or folder name is not required. Folder links are optional discovery hints, not limits. `ProjectDashboard/CPSync` is only the output folder for snapshots, reports, and requested presentation materials. Generated files and setup instructions are not independent primary evidence about the project.
 
 ## A. Microsoft 365 Copilot Agent Builder
 
 1. Open [Microsoft 365 Copilot](https://m365.cloud.microsoft) under your CPSync work account. Under **Agents**, select **New agent / Create an agent**.
 2. Open **Configure**, or select **Skip** if the conversational builder offers it. Enter the shared name, description, and Instructions above.
 3. Expand **Skills > Add**. Upload **cpsync-dashboard.zip** and confirm the skill is named `cpsync-dashboard`.
-4. In **Configure > Knowledge**, paste the **OneDrive web link** to the CPSync source-document folder and press **Enter**. Alternatively, use the **Attach cloud files** cloud icon to select the folder. The local-device Upload option accepts individual files, not folders. See the folder steps below.
+4. Check the available Microsoft 365 knowledge and search capabilities. A selected file or folder can provide useful context, but it must not become the boundary for project discovery. No source-folder link is required. Verify whether this agent can search relevant work OneDrive content beyond explicitly selected sources. If it cannot, report the limitation and use route B with approved Work IQ search for this requirement.
 5. Keep availability limited to yourself. Select **Create** and use the tenant's permitted publish/install flow to open your agent. Start a new conversation and run the first collection prompt.
 
 Microsoft's [Agent Builder skills walkthrough](https://microsoft.github.io/copilot-camp/pages/extend-m365-copilot/12-skills-da-agent-builder/) requires a ZIP with `SKILL.md` at its root and currently lists Frontier access for this feature. A missing Skills control can therefore require an administrator to check availability.
@@ -40,13 +40,13 @@ Microsoft's [Agent Builder skills walkthrough](https://microsoft.github.io/copil
 
 The snapshot's `collector.kind` must be `microsoft-365-copilot` for this route.
 
-### Add a OneDrive folder in Agent Builder
+### Discover documents across OneDrive
 
-1. In **OneDrive on the web**, open the folder containing your CPSync source documents. Copy its web address, or use **Copy link** with existing-access permissions where offered. Keep the folder's sharing permissions unchanged.
-2. Return to the agent's **Configure > Knowledge** section. Paste that URL into the knowledge input and press **Enter**. A Windows path such as `C:\Users\...` is not a cloud knowledge source.
-3. Wait for the added source to finish **Preparing**. If the folder picker only lets you open the folder, use the URL method instead.
+1. Ask the agent to search for CPSync across all work OneDrive locations accessible to your signed-in account. Include relevant shared OneDrive content where the tools support it. Do not constrain it to the dashboard output folder or require all originals to share a folder.
+2. Have it confirm matches from the documents' contents and references in CPSync meetings. Documents can have generic names. Optional known document or meeting links can improve discovery without becoming a mandatory file list.
+3. Test with known project documents from different locations and check the original citations. Finding those examples does not prove exhaustive coverage. If the available tools only search selected sources or cannot access shared items, the collector must report partial/unavailable coverage.
 
-These are Microsoft's documented [OneDrive folder-link and cloud-picker methods](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/agent-builder-add-knowledge#enter-a-url-for-files-folders-lists-or-sites). An error after submitting a cloud URL needs to be checked against that error and your account's access; it does not establish that all folders are unsupported.
+Microsoft documents [selected OneDrive knowledge sources and their limits in Agent Builder](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/agent-builder-add-knowledge#sharepoint-and-onedrive-content). Adding that context does not establish automatic discovery of new project documents anywhere in OneDrive. For this requirement, prefer Copilot Studio with the OneDrive workload in Work IQ, after verifying the approved tools actually provide the required search scope. The skill cannot add missing tools or permissions.
 
 For Teams context, use the Knowledge search box's **Chats** or **Meetings** tab to select CPSync items where available. **My Teams chats and meetings** searches more broadly across the signed-in user's accessible content. [Microsoft Teams knowledge options](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/agent-builder-add-knowledge#microsoft-teams-data).
 
@@ -62,7 +62,7 @@ For Teams context, use the Knowledge search box's **Chats** or **Meetings** tab 
 
 The snapshot's `collector.kind` must be `copilot-studio` for this route. The **GitHub Copilot harness** is a Studio runtime name; it does not mean your corporate collection runs from this GitHub repository. [Microsoft describes the runtime boundary](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/overview).
 
-**Folder context with Work IQ:** The Work IQ Sources dialog selects whole workloads and has no individual-folder selector. For this route, enable OneDrive and give the source folder's OneDrive web link to the agent in your conversation. Ask it to read and cite a known document from that folder before collecting. This provides task context, not a new security boundary or proof that the tool can enumerate every file. [Microsoft documents whole-workload scoping](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/add-work-iq#select-workloads-for-your-agent).
+**Discovery with Work IQ:** The Work IQ Sources dialog selects whole workloads and has no individual-folder selector. Enable OneDrive and instruct the agent to find relevant CPSync documents across all locations the current work user can access, including accessible shared OneDrive content where supported. A folder link is optional. Test documents from different locations and verify the cited originals. Whole-workload selection does not prove every item is searchable or every shared drive can be enumerated; report actual tool, indexing, and permission limits. [Microsoft documents whole-workload scoping](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/add-work-iq#select-workloads-for-your-agent).
 
 ## Verify the first collection and desktop connection
 

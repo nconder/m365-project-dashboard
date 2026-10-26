@@ -19,6 +19,9 @@ The collection requires accessible Microsoft 365 work search and an approved way
 - Identify the actual work-account UPN. Ask the user if it cannot be established; do not infer it from a document author or an example.
 - The project is exactly `CPSync`, ID `cpsync`. Ask before adding aliases or unrelated projects.
 - Search meeting transcripts, recaps, meeting chats, and work OneDrive documents available to the user. Consult Outlook or Teams messages only as supporting context.
+- Discover documents across all work OneDrive locations accessible to that user, including accessible shared OneDrive content. A project folder or source-folder link is not required. Optional folder links are search hints, not an allowlist or a reason to skip other locations. Never require moving or copying the original documents into a project folder.
+- Identify CPSync relevance from document content, verified meeting references, and links between actual project sources. A CPSync filename or folder name is not required. Follow relevant accessible source links; confirm project membership before including a finding, and ask about ambiguous matches rather than silently assigning them to CPSync.
+- Check the host's actual discovery scope. If tools only expose explicitly attached or selected files/folders, report the limitation and mark document coverage partial/unavailable. Do not describe that result as discovery across all accessible OneDrive locations. Missing access to shared items is also a coverage limitation, not evidence those items do not exist.
 - Start with a 14-day window unless the user supplies another period. Read earlier evidence to retain unresolved actions and explain continuing risks.
 - Mark missing or inaccessible sources as partial/unavailable. Search results do not establish exhaustive coverage. Claim complete coverage only for an explicitly enumerated scope that was actually checked.
 
@@ -28,6 +31,8 @@ In the user's work OneDrive, use `ProjectDashboard/CPSync/`:
 
 - `snapshot.json`: the current complete snapshot, UTF-8, at most 2 MB.
 - `supporting/`: presentation materials created with Microsoft Office skills when requested.
+
+This is the output location only; source documents remain in their original OneDrive locations. Read old snapshots to reconcile history, but never treat generated snapshots/reports, presentation derivatives, or collector setup files as independent primary evidence about CPSync. Cite and verify original sources instead.
 
 Preserve existing files and original sources. Read an existing snapshot before updating it. Use stable IDs. Reconcile completed actions; do not remove an unresolved action only because its source did not appear in the newest search. If it cannot be rechecked, retain it with an explicit note and mark coverage partial. The local dashboard archives accepted snapshots and creates HTML and Markdown reports.
 

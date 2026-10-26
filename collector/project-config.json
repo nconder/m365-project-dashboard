@@ -1,8 +1,8 @@
 {
   "project": { "id": "cpsync", "name": "CPSync", "aliases": ["CPSync"] },
-  "collection": { "provider": "microsoft-copilot", "identity": "signed-in-work-user", "windowDays": 14 },
+  "collection": { "provider": "microsoft-copilot", "identity": "signed-in-work-user", "windowDays": 14, "documentScope": "all-accessible-work-onedrive" },
   "output": { "folder": "ProjectDashboard/CPSync", "snapshot": "snapshot.json", "supporting": "supporting" },
   "meetingSeries": [],
   "sourceFolders": [],
-  "notes": "Add verified source locations in your private work OneDrive copy. Do not commit corporate project sources or runtime data to GitHub."
+  "notes": "No source folder is required. sourceFolders and meetingSeries are optional discovery hints, not limits on project discovery. Project documents remain in any accessible work OneDrive location; output.folder is only for generated files. Keep verified source hints in your private work OneDrive copy. Do not commit corporate project sources or runtime data to GitHub."
 }

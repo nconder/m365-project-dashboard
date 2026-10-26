@@ -35,6 +35,8 @@ Stop the current process before using the same port, or set a different `PORT`. 
 
 Microsoft Copilot performs collection; Node reads the resulting OneDrive files. For **Microsoft 365 Agent Builder** and **Copilot Studio**, create an agent first and then add the CPSync skill. Follow the [setup instructions for both builders](docs/agent-setup.md).
 
+**Project documents can stay anywhere in work OneDrive that the signed-in user can access**, including accessible shared OneDrive content. The collector identifies CPSync relevance from document content and meeting references, across locations. No source folder is required and originals do not need to move. `ProjectDashboard/CPSync` is only the output location for snapshots, reports, and requested presentation materials. Folder links are optional search hints, never a restriction on discovery. Cross-location discovery still requires the selected Microsoft host to expose approved search tools; selected knowledge attachments alone do not prove that capability.
+
 | Where you build | File to add to the agent | Starting point |
 | --- | --- | --- |
 | Microsoft 365 Copilot Agent Builder | [cpsync-dashboard.zip](collector/packages/cpsync-dashboard.zip) | New agent > Configure > Skills > Add |
