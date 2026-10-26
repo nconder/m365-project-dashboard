@@ -1,0 +1,13 @@
+{
+  "name": "m365-project-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CPSync project intelligence from Microsoft Copilot, OneDrive files, and a local Node dashboard.",
+  "engines": { "node": ">=22.14.0" },
+  "scripts": {
+    "start": "node app/server.mjs",
+    "test": "node --test",
+    "check": "node --check app/server.mjs && node --check app/store.mjs && node --check app/snapshot.mjs && node --check app/report.mjs && node --check public/app.js"
+  }
+}

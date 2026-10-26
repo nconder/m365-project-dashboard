@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "project": { "id": "cpsync", "name": "CPSync" },
+  "collectedAt": "2026-10-01T14:00:00Z",
+  "collector": { "kind": "copilot-cowork", "userPrincipalName": "sample.user@contoso.com" },
+  "coverage": {
+    "windowStart": "2026-09-24",
+    "windowEnd": "2026-10-01",
+    "meetings": { "status": "partial", "note": "Fictional sample: two meetings illustrate the interface. No real meetings were searched." },
+    "documents": { "status": "partial", "note": "Fictional sample: two documents illustrate evidence-linked findings." },
+    "messages": { "status": "not-requested", "note": "Fictional sample: Teams messages and email were not collected." }
+  },
+  "summary": {
+    "headline": "The next milestone is taking shape.",
+    "overview": "Fictional preview: the sample team agreed on a phased validation plan. The next step is to confirm the acceptance criteria and review the pilot checklist before the readiness discussion.",
+    "health": "unknown",
+    "sourceIds": ["sample-meeting-1", "sample-document-1"]
+  },
+  "sources": [
+    { "id": "sample-meeting-1", "kind": "meeting", "title": "Fictional CPSync planning review", "url": "https://teams.microsoft.com/l/meeting/details?eventId=fictional-example-1", "date": "2026-10-01T10:00:00Z" },
+    { "id": "sample-meeting-2", "kind": "meeting", "title": "Fictional pilot walkthrough", "url": "https://teams.microsoft.com/l/meeting/details?eventId=fictional-example-2", "date": "2026-09-29T14:00:00Z" },
+    { "id": "sample-document-1", "kind": "document", "title": "Fictional pilot readiness checklist.docx", "url": "https://contoso.sharepoint.com/sites/fictional/CPSync-readiness.docx", "date": "2026-10-01" },
+    { "id": "sample-document-2", "kind": "document", "title": "Fictional implementation outline.docx", "url": "https://contoso.sharepoint.com/sites/fictional/CPSync-outline.docx", "date": "2026-09-28" }
+  ],
+  "meetings": [
+    { "id": "meeting-1", "title": "Planning review", "date": "2026-10-01T10:00:00Z", "organizer": "Fictional project team", "summary": "Sample discussion: the team reviewed the next milestone and agreed to validate the first workstream before widening the pilot.", "sourceIds": ["sample-meeting-1"] },
+    { "id": "meeting-2", "title": "Pilot walkthrough", "date": "2026-09-29T14:00:00Z", "organizer": "Fictional project team", "summary": "Sample discussion: acceptance criteria need an owner and a final review before the readiness session.", "sourceIds": ["sample-meeting-2"] }
+  ],
+  "decisions": [
+    { "id": "decision-1", "title": "Validate one workstream first", "detail": "Fictional decision: use a phased pilot before widening the scope.", "owner": "Fictional project lead", "decidedAt": "2026-10-01", "sourceIds": ["sample-meeting-1"] },
+    { "id": "decision-2", "title": "Use the readiness checklist as the review agenda", "detail": "Fictional decision: reference the checklist during the pilot review.", "owner": "Fictional delivery team", "decidedAt": "2026-09-29", "sourceIds": ["sample-meeting-2", "sample-document-1"] }
+  ],
+  "actions": [
+    { "id": "action-1", "title": "Confirm pilot acceptance criteria", "owner": "Fictional project lead", "dueDate": "2026-10-05", "status": "open", "sourceIds": ["sample-meeting-1"] },
+    { "id": "action-2", "title": "Review the readiness checklist", "owner": "Fictional delivery team", "dueDate": "2026-10-06", "status": "in-progress", "sourceIds": ["sample-document-1"] },
+    { "id": "action-3", "title": "Prepare the pilot walkthrough notes", "owner": "Fictional analyst", "dueDate": "2026-09-30", "status": "done", "sourceIds": ["sample-meeting-2"] }
+  ],
+  "risks": [
+    { "id": "risk-1", "title": "Acceptance criteria remain open", "detail": "Fictional risk: a readiness decision depends on confirming the acceptance criteria.", "severity": "medium", "owner": "Fictional project lead", "sourceIds": ["sample-meeting-1"] }
+  ],
+  "documents": [
+    { "id": "document-1", "title": "Pilot readiness checklist", "summary": "Fictional document: the evidence and checks to review before the next pilot milestone.", "modifiedAt": "2026-10-01", "sourceIds": ["sample-document-1"] },
+    { "id": "document-2", "title": "Implementation outline", "summary": "Fictional document: the phased approach, dependencies, and handoffs for the sample workstream.", "modifiedAt": "2026-09-28", "sourceIds": ["sample-document-2"] }
+  ],
+  "presentation": {
+    "talkingPoints": [
+      { "text": "Fictional preview: the pilot has a phased validation approach with one initial workstream.", "sourceIds": ["sample-meeting-1", "sample-document-2"] },
+      { "text": "Fictional preview: acceptance criteria and the readiness checklist are the next review priorities.", "sourceIds": ["sample-meeting-2", "sample-document-1"] },
+      { "text": "Fictional preview: reported project health remains unknown until the review is complete.", "sourceIds": ["sample-meeting-1"] }
+    ]
+  }
+}

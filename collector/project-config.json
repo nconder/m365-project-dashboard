@@ -1,0 +1,8 @@
+{
+  "project": { "id": "cpsync", "name": "CPSync", "aliases": ["CPSync"] },
+  "collection": { "provider": "microsoft-copilot", "identity": "signed-in-work-user", "windowDays": 14 },
+  "output": { "folder": "ProjectDashboard/CPSync", "snapshot": "snapshot.json", "supporting": "supporting" },
+  "meetingSeries": [],
+  "sourceFolders": [],
+  "notes": "Add verified source locations in your private work OneDrive copy. Do not commit corporate project sources or runtime data to GitHub."
+}
