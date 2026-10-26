@@ -12,7 +12,7 @@
 
 ## Current code
 
-Dependency-free Node server, local file adapter, cited snapshot validation, generated HTML/Markdown reports, source dialogs, all dashboard views, presentation mode, supporting-file downloads, a Microsoft Copilot Cowork collector skill and a run prompt. Fictional sample mode is explicit. No actual company data is in source control.
+Dependency-free Node server, local file adapter, cited snapshot validation, generated HTML/Markdown reports, source dialogs, all dashboard views, presentation mode, supporting-file downloads, a Microsoft Copilot collector skill and a run prompt. The shared skill now documents Agent Builder, Copilot Studio, and Cowork host metadata and capability checks. [agent-setup.md](agent-setup.md) provides both agent-builder setup paths; `collector/agent-instructions.txt` supplies the agent-level Instructions, and `collector/packages/cpsync-dashboard.zip` is the Agent Builder skill upload. Fictional sample mode is explicit. No actual company data is in source control.
 
 ## Outstanding device/account verification
 
@@ -21,7 +21,7 @@ Dependency-free Node server, local file adapter, cited snapshot validation, gene
 - The initially signed-in Microsoft Copilot session reports M365 Copilot (Basic), with web data, uploads and viewed content. The user confirmed it is not the CPSync work account. The correct account and its approved work-data/Cowork capabilities still need to be established before collection. Do not acquire additional permissions or substitute a different identity.
 
 - At initial inspection the desktop had no existing synced OneDrive folder. The app must show this honestly until the user signs in to/syncs the correct CPSync work OneDrive and configures the local project folder and expected account.
-- No genuine CPSync snapshot has yet been collected by a Microsoft Copilot agent. Live Teams/document retrieval, actual work-account reporting, source coverage and a recurring task must be verified with the user in the Microsoft environment.
+- No genuine CPSync snapshot has yet been collected by a Microsoft Copilot agent. Agent Builder and Copilot Studio setup instructions have been checked against Microsoft documentation, but no agent was created in the correct tenant. Live Teams/document retrieval, actual runtime end-user authentication, OneDrive file-write capability, source coverage and any recurring task must be verified with the user in the Microsoft environment. A skill import alone does not provide these capabilities.
 - A cloud coding environment can finish code and isolated tests without the desktop. It cannot use this desktop's local OneDrive, processes, browser sessions, or work sign-in while the desktop is off.
 - Do not mark corporate collection as complete because sample HTTP tests or a browser demo passes.
 

@@ -5,7 +5,13 @@ description: Collect evidence-linked CPSync project intelligence from accessible
 
 # CPSync project collector
 
-Use this skill when the user asks to collect, refresh, brief, or prepare presentation information for CPSync. It runs in Microsoft Copilot Cowork, not in the Node application.
+Use this skill when the user asks to collect, refresh, brief, or prepare presentation information for CPSync. It runs in Microsoft 365 Copilot Agent Builder, Microsoft Copilot Cowork, or Microsoft Copilot Studio. The Node application only reads the resulting files.
+
+## Required host capabilities
+
+Before searching or saving, establish the active work identity and check which approved Microsoft tools this host actually provides. A skill supplies instructions, not authentication or new tools. Use only access authenticated as the current end user; a maker-owned connection is not a substitute for runtime end-user authentication.
+
+The collection requires accessible Microsoft 365 work search and an approved way to create/update the target file in the user's work OneDrive. Downloading a generated attachment or adding a knowledge source does not prove OneDrive write access. If an essential capability or the current identity cannot be established, stop and describe the missing capability. Do not invent a snapshot or report an unsaved file as saved. A user-directed manual export must be described as manual and must not be presented as automatic collection.
 
 ## Identity and scope
 
@@ -31,13 +37,15 @@ Do not change Planner tasks, send messages/email, publish files, or grant sharin
 
 Every field shown below is required except optional record detail/date/owner fields. Empty arrays are allowed. Unknown owners can be omitted or written as `Unknown`; unknown dates must be omitted, never guessed or written as a fabricated date.
 
+Set `collector.kind` to the actual host: `microsoft-365-copilot` for a Microsoft 365 Agent Builder agent, `copilot-studio` for a Copilot Studio agent, or `copilot-cowork` for Cowork. Never copy a different host's identity or kind.
+
 ```json
 {
   "schemaVersion": 1,
   "project": { "id": "cpsync", "name": "CPSync" },
   "collectedAt": "ACTUAL_UTC_TIMESTAMP",
   "collector": {
-    "kind": "copilot-cowork",
+    "kind": "ACTUAL_SUPPORTED_COLLECTOR_KIND",
     "userPrincipalName": "ACTUAL_SIGNED_IN_WORK_ACCOUNT"
   },
   "coverage": {
@@ -63,7 +71,7 @@ Every field shown below is required except optional record detail/date/owner fie
 }
 ```
 
-Replace timestamp/account placeholders with real values. Never save them as literal placeholders.
+Replace the collector-kind, timestamp, and account placeholders with actual supported values. Never save them as literal placeholders.
 
 Coverage status: `complete`, `partial`, `unavailable`, or `not-requested`. Health: `on-track`, `at-risk`, `blocked`, or `unknown`. Use unknown health unless evidence explicitly supports a status. A collection with no sources must have unknown health, no records/talking points, and no complete coverage claims.
 

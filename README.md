@@ -33,7 +33,16 @@ Stop the current process before using the same port, or set a different `PORT`. 
 
 ## Microsoft Copilot collection
 
-The collector is **not** an API collector inside Node. Install `collector/skills/cpsync-dashboard/SKILL.md` in the work OneDrive at `Documents/Cowork/skills/cpsync-dashboard/SKILL.md` as shown in Microsoft's current Cowork instructions. Start a new Cowork session after installing a skill. The Copilot experience and custom skills must be enabled by the organisation.
+Microsoft Copilot performs collection; Node reads the resulting OneDrive files. For **Microsoft 365 Agent Builder** and **Copilot Studio**, create an agent first and then add the CPSync skill. Follow the [setup instructions for both builders](docs/agent-setup.md).
+
+| Where you build | File to add to the agent | Starting point |
+| --- | --- | --- |
+| Microsoft 365 Copilot Agent Builder | [cpsync-dashboard.zip](collector/packages/cpsync-dashboard.zip) | New agent > Configure > Skills > Add |
+| Copilot Studio, GitHub Copilot harness | [SKILL.md](collector/skills/cpsync-dashboard/SKILL.md) | Create agent > Build > Skills > Upload a skill |
+
+Use [agent-instructions.txt](collector/agent-instructions.txt) for the agent's general Instructions field. The skill supplies the collection procedure and snapshot contract. Adding a skill does not grant source access, supply a file-writing tool, or create a schedule. Verify these capabilities under the active work user before a real collection.
+
+**Cowork remains another option:** place the same skill in your work OneDrive at `Documents/Cowork/skills/cpsync-dashboard/SKILL.md`, then start a new Cowork session, or use Cowork's Customize > Skills > Upload skill option. See [Microsoft's Cowork instructions](https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork#upload-a-skill). The full OneDrive setup ZIP is a folder installation bundle; use the individual skill package above in Agent Builder.
 
 Use **Collect with Copilot** in the dashboard to copy `collector/run-prompt.txt`, or open that file directly. The prompt requests the current signed-in work identity, a 14-day CPSync search, real source permalinks, and an honest source-coverage report. A pending manual run must not be described as successful or automatically scheduled.
 
